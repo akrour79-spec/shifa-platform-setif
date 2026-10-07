@@ -1,0 +1,19 @@
+node_modules/
+.env
+.env.local
+.env.*.local
+
+# سجلات
+*.log
+npm-debug.log*
+
+# ملفات النظام
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# قاعدة بيانات محلية (إن استُخدمت للتطوير)
+server/db/*.db
+server/db/*.db-journal
+server/db/db.json

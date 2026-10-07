@@ -1,0 +1,18 @@
+[build]
+  command = "npm install"
+  publish = "."
+
+[functions]
+  directory = "netlify/functions"
+
+# أي طلب API يُوجّه إلى function
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api"
+  status = 200
+
+# بقية المسارات تُقدَم كملفات ثابتة/index.html
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
