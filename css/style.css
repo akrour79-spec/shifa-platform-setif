@@ -3406,3 +3406,23 @@ button[type="submit"]:active {
         transform: none !important;
     }
 }
+
+
+/* شارة البيانات القديمة في شاشة الطابور (وضع عدم الاتصال) */
+#clinic-tv-overlay.tv-stale #tv-number-display {
+    opacity: 0.55;
+    filter: grayscale(0.6);
+}
+#clinic-tv-overlay.tv-stale::after {
+    content: 'غير متصل — تُعرض آخر بيانات معروفة';
+    position: absolute;
+    top: 1rem;
+    inset-inline-start: 1rem;
+    background: rgba(245, 158, 11, 0.92);
+    color: #1d1d1f;
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 0.35rem 0.8rem;
+    border-radius: 999px;
+    z-index: 5;
+}
