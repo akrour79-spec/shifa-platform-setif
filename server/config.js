@@ -42,6 +42,9 @@ function collectErrors() {
     if (process.env.CORS_ORIGIN === '*') {
       errors.push('CORS_ORIGIN=* غير مسموح في الإنتاج. حدد النطاق بدقة.');
     }
+    if (!process.env.CHARGILY_SECRET_KEY && !process.env.CHARGILY_API_KEY) {
+      console.warn('\x1b[33m⚠ تحذير: مفاتيح Chargily غائبة في الإنتاج — الدفع الإلكتروني سيرفض (fail-closed).\x1b[0m');
+    }
   }
 
   return errors;

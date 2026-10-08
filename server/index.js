@@ -219,6 +219,9 @@ app.use(errorHandler);
 let server;
 
 async function start() {
+  // تتبّع الأخطاء (Sentry) — يُفعَّل فقط إذا ضُبط SENTRY_DSN
+  try { require('./lib/monitoring').init(); } catch { /* اختياري */ }
+
   // نفحص قاعدة البيانات قبل قبول الطلبات — أوضح منDiscovery الفاشل لاحقاً
   const health = await db.healthCheck();
   if (!health.ok) {

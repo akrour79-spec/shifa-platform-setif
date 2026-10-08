@@ -86,6 +86,12 @@ function errorHandler(err, req, res, _next) {
 
   if (status >= 500) {
     console.error(`[error] ${req.method} ${req.originalUrl}`, '\n', err);
+    try {
+      require('../lib/monitoring').captureError(err, {
+        method: req.method,
+        url: req.originalUrl,
+      });
+    } catch { /* المراقبة اختيارية */ }
   }
 
   // لا نكشف تفاصيل داخلية في الإنتاج. AppError مُصمَّم ليكون آمناً للعرض.
