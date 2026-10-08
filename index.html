@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>منصة شفاء — المنصة الطبية الأولى بولاية سطيف</title>
+    <meta name="description" content="احجز موعدك الطبي في سطيف بكل سهولة — منصة شفاء تربط المرضى بالأطباء والعيادات.">
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#059669">
@@ -13,96 +14,277 @@
     <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
     <link rel="stylesheet" href="css/style.css?v=20261004_v12">
     <style>
+        /* ===== بوابة شفاء — تصميم Premium Medical ===== */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+            background: #0b1220;
+            color: #f1f5f9;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* --- خلفية متدرجة متحركة --- */
+        .mesh-bg {
+            position: fixed; inset: 0; z-index: -2;
+            background: linear-gradient(160deg, #0b1220 0%, #0d1b2a 45%, #0b1f1a 100%);
+        }
+        .orb {
+            position: fixed; border-radius: 50%; z-index: -1;
+            filter: blur(90px); opacity: 0.5;
+            animation: orbFloat 14s ease-in-out infinite;
+        }
+        .orb-1 { width: 480px; height: 480px; background: #059669; top: -120px; right: -120px; }
+        .orb-2 { width: 380px; height: 380px; background: #0284c7; bottom: -100px; left: -100px; animation-delay: -5s; }
+        .orb-3 { width: 260px; height: 260px; background: #7c3aed; top: 45%; left: 38%; opacity: 0.28; animation-delay: -9s; }
+        @keyframes orbFloat {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(-40px, 40px) scale(1.12); }
+        }
+
+        /* --- شبكة خافتة --- */
+        .grid-overlay {
+            position: fixed; inset: 0; z-index: -1;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+            background-size: 44px 44px;
+            mask-image: radial-gradient(ellipse 80% 65% at 50% 35%, black 30%, transparent 75%);
+        }
+
         .gateway-wrap {
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 2rem 1rem;
-            background: radial-gradient(ellipse at 50% 0%, rgba(5, 150, 105, 0.08), transparent 60%);
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 3rem 1.25rem 2rem;
+            max-width: 1100px; margin: 0 auto;
         }
+
+        /* --- الشعار --- */
         .gateway-logo {
-            width: 84px; height: 84px;
-            background: linear-gradient(135deg, #059669, #10b981);
-            border-radius: 24px;
+            width: 92px; height: 92px;
+            background: linear-gradient(135deg, #10b981, #059669 60%, #047857);
+            border-radius: 26px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 2.5rem; font-weight: 900; color: #fff;
-            box-shadow: 0 12px 32px rgba(5, 150, 105, 0.35);
-            animation: floatY 4s ease-in-out infinite;
-            margin-bottom: 1.25rem;
+            font-size: 2.8rem; font-weight: 900; color: #fff;
+            box-shadow: 0 16px 48px rgba(16, 185, 129, 0.45), inset 0 2px 8px rgba(255,255,255,0.25);
+            animation: logoFloat 4.5s ease-in-out infinite, heroFadeUp 0.8s cubic-bezier(0.25,1,0.5,1) both;
+            margin-bottom: 1.5rem;
         }
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0) rotate(-2deg); }
+            50% { transform: translateY(-12px) rotate(2deg); }
+        }
+
+        .gateway-badge {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            color: #6ee7b7; font-size: 0.85rem; font-weight: 600;
+            padding: 0.45rem 1.1rem; border-radius: 9999px;
+            margin-bottom: 1.25rem;
+            animation: heroFadeUp 0.8s 0.1s cubic-bezier(0.25,1,0.5,1) both;
+        }
+        .gateway-badge .pulse-dot {
+            width: 8px; height: 8px; border-radius: 50%;
+            background: #10b981;
+            animation: pulseDot 1.8s ease-in-out infinite;
+        }
+        @keyframes pulseDot {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0.6); }
+            50% { box-shadow: 0 0 0 7px rgba(16,185,129,0); }
+        }
+
         .gateway-title {
-            font-size: 2rem; font-weight: 900; color: var(--text-main);
-            margin-bottom: 0.5rem; text-align: center;
+            font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 900;
+            text-align: center; line-height: 1.35; margin-bottom: 0.75rem;
+            background: linear-gradient(120deg, #ffffff 30%, #a7f3d0 70%);
+            -webkit-background-clip: text; background-clip: text; color: transparent;
+            animation: heroFadeUp 0.8s 0.2s cubic-bezier(0.25,1,0.5,1) both;
         }
         .gateway-sub {
-            color: var(--text-muted); font-size: 1.05rem;
-            margin-bottom: 2.5rem; text-align: center;
+            color: #94a3b8; font-size: clamp(1rem, 2.4vw, 1.2rem);
+            text-align: center; max-width: 620px; line-height: 1.9;
+            margin-bottom: 3rem;
+            animation: heroFadeUp 0.8s 0.3s cubic-bezier(0.25,1,0.5,1) both;
         }
+
+        /* --- بطاقات الأدوار (زجاجية + إمالة 3D) --- */
         .gateway-cards {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 340px));
-            gap: 1.5rem;
-            justify-content: center;
-            width: 100%; max-width: 760px;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 380px));
+            gap: 1.75rem; justify-content: center;
+            width: 100%; margin-bottom: 3.5rem;
+            perspective: 1200px;
         }
         .gateway-card {
-            background: var(--apple-card-bg, #fff);
-            border: 1px solid var(--apple-border, #e5e7eb);
-            border-radius: 20px;
-            padding: 2rem 1.75rem;
-            text-align: center;
-            text-decoration: none;
-            color: inherit;
-            transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.3s;
-            animation: heroFadeUp 0.7s cubic-bezier(0.25, 1, 0.5, 1) both;
+            position: relative;
+            background: rgba(255, 255, 255, 0.045);
+            backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 24px;
+            padding: 2.25rem 2rem;
+            text-align: center; text-decoration: none; color: inherit;
+            transition: border-color 0.35s, box-shadow 0.35s;
+            transform-style: preserve-3d;
+            will-change: transform;
+            animation: heroFadeUp 0.8s cubic-bezier(0.25,1,0.5,1) both;
+            overflow: hidden;
         }
-        .gateway-card:nth-child(2) { animation-delay: 0.15s; }
-        .gateway-card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 20px 48px rgba(5, 150, 105, 0.18);
+        .gateway-card:nth-child(1) { animation-delay: 0.45s; }
+        .gateway-card:nth-child(2) { animation-delay: 0.6s; }
+        .gateway-card::before {
+            content: ''; position: absolute; inset: 0;
+            background: radial-gradient(600px circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,0.09), transparent 45%);
+            opacity: 0; transition: opacity 0.35s; pointer-events: none;
+        }
+        .gateway-card:hover::before { opacity: 1; }
+        .gateway-card.patient:hover {
+            border-color: rgba(16, 185, 129, 0.55);
+            box-shadow: 0 24px 64px rgba(16, 185, 129, 0.22);
+        }
+        .gateway-card.doctor:hover {
+            border-color: rgba(56, 189, 248, 0.55);
+            box-shadow: 0 24px 64px rgba(56, 189, 248, 0.22);
         }
         .gateway-card .g-icon {
-            width: 64px; height: 64px; margin: 0 auto 1rem;
-            border-radius: 18px;
+            width: 72px; height: 72px; margin: 0 auto 1.25rem;
+            border-radius: 20px;
             display: flex; align-items: center; justify-content: center;
+            transform: translateZ(40px);
         }
-        .gateway-card.patient .g-icon { background: #ecfdf5; color: #059669; }
-        .gateway-card.doctor .g-icon { background: #eff6ff; color: #0284c7; }
-        .gateway-card h3 { font-size: 1.35rem; font-weight: 800; margin-bottom: 0.5rem; }
-        .gateway-card p { color: var(--text-muted); font-size: 0.95rem; line-height: 1.7; margin-bottom: 1.25rem; }
+        .gateway-card.patient .g-icon {
+            background: linear-gradient(135deg, rgba(16,185,129,0.25), rgba(16,185,129,0.08));
+            border: 1px solid rgba(16,185,129,0.4); color: #6ee7b7;
+        }
+        .gateway-card.doctor .g-icon {
+            background: linear-gradient(135deg, rgba(56,189,248,0.25), rgba(56,189,248,0.08));
+            border: 1px solid rgba(56,189,248,0.4); color: #7dd3fc;
+        }
+        .gateway-card h3 {
+            font-size: 1.5rem; font-weight: 800; margin-bottom: 0.6rem;
+            transform: translateZ(30px); color: #f8fafc;
+        }
+        .gateway-card p {
+            color: #94a3b8; font-size: 0.98rem; line-height: 1.85;
+            margin-bottom: 1.5rem; transform: translateZ(20px);
+        }
         .gateway-card .g-cta {
-            display: inline-flex; align-items: center; gap: 0.5rem;
-            font-weight: 700; font-size: 1rem;
+            display: inline-flex; align-items: center; gap: 0.6rem;
+            font-weight: 700; font-size: 1.05rem;
+            padding: 0.8rem 1.8rem; border-radius: 14px;
+            transform: translateZ(35px);
+            transition: transform 0.25s;
         }
-        .gateway-card.patient .g-cta { color: #059669; }
-        .gateway-card.doctor .g-cta { color: #0284c7; }
+        .gateway-card.patient .g-cta {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #fff; box-shadow: 0 8px 24px rgba(16,185,129,0.4);
+        }
+        .gateway-card.doctor .g-cta {
+            background: linear-gradient(135deg, #38bdf8, #0284c7);
+            color: #fff; box-shadow: 0 8px 24px rgba(56,189,248,0.4);
+        }
+        .gateway-card:hover .g-cta { transform: translateZ(45px) scale(1.05); }
+
+        /* --- شريط الإحصائيات --- */
+        .gateway-stats {
+            display: flex; gap: 2.5rem; flex-wrap: wrap; justify-content: center;
+            margin-bottom: 3rem;
+            animation: heroFadeUp 0.8s 0.75s cubic-bezier(0.25,1,0.5,1) both;
+        }
+        .g-stat { text-align: center; }
+        .g-stat .num {
+            font-size: 2rem; font-weight: 900; color: #f8fafc;
+            font-variant-numeric: tabular-nums;
+        }
+        .g-stat .lbl { color: #64748b; font-size: 0.88rem; margin-top: 0.25rem; }
+
+        /* --- شريط الثقة --- */
+        .trust-strip {
+            display: flex; gap: 1.75rem; flex-wrap: wrap; justify-content: center;
+            margin-bottom: 2.5rem;
+            animation: heroFadeUp 0.8s 0.9s cubic-bezier(0.25,1,0.5,1) both;
+        }
+        .trust-item {
+            display: inline-flex; align-items: center; gap: 0.5rem;
+            color: #94a3b8; font-size: 0.9rem; font-weight: 600;
+        }
+        .trust-item i { color: #10b981; }
+
         .gateway-foot {
-            margin-top: 2.5rem; color: var(--text-muted);
-            font-size: 0.85rem; text-align: center;
+            color: #475569; font-size: 0.85rem; text-align: center;
+            animation: heroFadeUp 0.8s 1s cubic-bezier(0.25,1,0.5,1) both;
+        }
+
+        @keyframes heroFadeUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before { animation: none !important; transition: none !important; }
+        }
+        @media (max-width: 480px) {
+            .gateway-stats { gap: 1.5rem; }
+            .g-stat .num { font-size: 1.6rem; }
         }
     </style>
 </head>
 <body>
+    <div class="mesh-bg"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="grid-overlay"></div>
+
     <div class="gateway-wrap">
         <div class="gateway-logo">ش</div>
-        <h1 class="gateway-title">منصة شِـفَـاء سطيف</h1>
-        <p class="gateway-sub">المنصة الطبية الأولى بولاية سطيف — اختر واجهتك</p>
+
+        <div class="gateway-badge">
+            <span class="pulse-dot"></span>
+            المنصة الطبية الأولى بولاية سطيف
+        </div>
+
+        <h1 class="gateway-title">صحتك تبدا بخطوة واحدة</h1>
+        <p class="gateway-sub">
+            منصة شفاء تربطك بأفضل الأطباء والعيادات في سطيف —
+            احجز موعدك في ثوانٍ، تابع دورك لحظة بلحظة، وخليك مرتاح.
+        </p>
 
         <div class="gateway-cards">
-            <a href="patient.html" class="gateway-card patient">
-                <div class="g-icon"><i data-lucide="heart-pulse" style="width: 32px; height: 32px;"></i></div>
+            <a href="patient.html" class="gateway-card patient" data-tilt>
+                <div class="g-icon"><i data-lucide="heart-pulse" style="width: 34px; height: 34px;"></i></div>
                 <h3>أنا مريض</h3>
-                <p>ابحث عن الأطباء والعيادات، احجز موعدك، تابع دورك في الانتظار، واطّلع على ملفك الصحي.</p>
-                <span class="g-cta">ادخل كـ مريض <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i></span>
+                <p>ابحث عن الأطباء والعيادات، احجز موعدك في ثوانٍ، تابع دورك في قاعة الانتظار، واطّلع على ملفك الصحي.</p>
+                <span class="g-cta">ادخل كـ مريض <i data-lucide="arrow-left" style="width: 19px; height: 19px;"></i></span>
             </a>
-            <a href="doctor.html" class="gateway-card doctor">
-                <div class="g-icon"><i data-lucide="stethoscope" style="width: 32px; height: 32px;"></i></div>
+            <a href="doctor.html" class="gateway-card doctor" data-tilt>
+                <div class="g-icon"><i data-lucide="stethoscope" style="width: 34px; height: 34px;"></i></div>
                 <h3>أنا طبيب</h3>
-                <p>أدر عيادتك: المواعيد اليومية، طابور الانتظار، الوصفات الطبية، وإحصائيات نشاطك.</p>
-                <span class="g-cta">ادخل كـ طبيب <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i></span>
+                <p>أدر عيادتك باحترافية: المواعيد اليومية، طابور الانتظار الذكي، الوصفات الطبية، وإحصائيات نشاطك.</p>
+                <span class="g-cta">ادخل كـ طبيب <i data-lucide="arrow-left" style="width: 19px; height: 19px;"></i></span>
             </a>
+        </div>
+
+        <div class="gateway-stats">
+            <div class="g-stat">
+                <div class="num"><span data-count="120">0</span>+</div>
+                <div class="lbl">طبيب وعيادة</div>
+            </div>
+            <div class="g-stat">
+                <div class="num"><span data-count="8500">0</span>+</div>
+                <div class="lbl">موعد محجوز</div>
+            </div>
+            <div class="g-stat">
+                <div class="num"><span data-count="15">0</span></div>
+                <div class="lbl">تخصص طبي</div>
+            </div>
+        </div>
+
+        <div class="trust-strip">
+            <span class="trust-item"><i data-lucide="shield-check" style="width: 17px; height: 17px;"></i> حجز آمن ومجاني</span>
+            <span class="trust-item"><i data-lucide="zap" style="width: 17px; height: 17px;"></i> بدون انتظار</span>
+            <span class="trust-item"><i data-lucide="bell-ring" style="width: 17px; height: 17px;"></i> تذكير واتساب</span>
         </div>
 
         <p class="gateway-foot">منصة شفاء © 2026 — ولاية سطيف، الجزائر</p>
@@ -110,6 +292,43 @@
 
     <script>
         lucide.createIcons();
+
+        // إمالة 3D للبطاقات (خفيف، CSS + JS بسيط)
+        document.querySelectorAll('[data-tilt]').forEach((card) => {
+            const strength = 10;
+            card.addEventListener('mousemove', (e) => {
+                const r = card.getBoundingClientRect();
+                const x = (e.clientX - r.left) / r.width - 0.5;
+                const y = (e.clientY - r.top) / r.height - 0.5;
+                card.style.transform =
+                    `rotateY(${x * strength}deg) rotateX(${-y * strength}deg) translateZ(8px)`;
+                card.style.setProperty('--mx', `${(x + 0.5) * 100}%`);
+                card.style.setProperty('--my', `${(y + 0.5) * 100}%`);
+            });
+            card.addEventListener('mouseleave', () => {
+                card.style.transform = 'rotateY(0) rotateX(0)';
+            });
+        });
+
+        // عدّاد متحرك للإحصائيات
+        const counters = document.querySelectorAll('[data-count]');
+        const io = new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (!entry.isIntersecting) return;
+                const el = entry.target;
+                io.unobserve(el);
+                const target = parseInt(el.dataset.count, 10);
+                const dur = 1600, t0 = performance.now();
+                const fmt = (n) => n.toLocaleString('en-US').replace(/,/g, '٬');
+                (function tick(t) {
+                    const p = Math.min((t - t0) / dur, 1);
+                    const eased = 1 - Math.pow(1 - p, 3);
+                    el.textContent = fmt(Math.round(target * eased));
+                    if (p < 1) requestAnimationFrame(tick);
+                })(t0);
+            });
+        }, { threshold: 0.4 });
+        counters.forEach((el) => io.observe(el));
     </script>
 </body>
 </html>
