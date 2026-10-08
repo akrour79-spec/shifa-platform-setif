@@ -55,12 +55,12 @@ function codeFiles() {
   return out;
 }
 
-const HTML = read('index.html');
+const HTML = ['index.html', 'patient.html', 'doctor.html'].map(read).join('\n');
 /** وحدات الواجهة (مقسّمة من app.js) — تُقرأ مجمّعةً لفحوص التماسك */
 const JS_MODULES = [
   'js/core.js', 'js/ui.js', 'js/doctors.js', 'js/booking.js', 'js/queue.js',
   'js/dashboard.js', 'js/billing.js', 'js/auth.js', 'js/admin.js',
-  'js/portal.js', 'js/init.js',
+  'js/portal.js', 'js/init.js', 'js/init-patient.js', 'js/init-doctor.js',
 ];
 const APP = JS_MODULES.map(read).join('\n');
 
@@ -300,9 +300,9 @@ test('حالة العيادة محفوظة مع الجلسة وتُقرأ من �
   assert.ok(/await refreshClinicState\(\)/.test(APP),
     'refreshClinicState لا تُستدعى عند الإقلاع');
 
-  // والواجهة تُظهر ذلك صراحةً
-  assert.ok(/id="clinic-pending-banner"/.test(read('index.html')),
-    'لا توجد شارة "بانتظار المراجعة" في الواجهة');
+  // والواجهة تُظهر ذلك صراحةً (في واجهة الطبيب)
+  assert.ok(/id="clinic-pending-banner"/.test(read('doctor.html')),
+    'لا توجد شارة "بانتظار المراجعة" في واجهة الطبيب');
   assert.match(
     APP,
     /isPendingDoctor[\s\S]{0,200}?pendingBanner\.style\.display = isPendingDoctor \? 'flex' : 'none'/,
