@@ -93,6 +93,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     renderQueue();
     renderDoctorDashboard();
     startConnectionStatusPolling();
+    initScrollReveal();
     renderSubscriptions();
     renderPricingCards();
 

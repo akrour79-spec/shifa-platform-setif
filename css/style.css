@@ -3407,7 +3407,6 @@ button[type="submit"]:active {
     }
 }
 
-
 /* شارة البيانات القديمة في شاشة الطابور (وضع عدم الاتصال) */
 #clinic-tv-overlay.tv-stale #tv-number-display {
     opacity: 0.55;
@@ -3425,4 +3424,46 @@ button[type="submit"]:active {
     padding: 0.35rem 0.8rem;
     border-radius: 999px;
     z-index: 5;
+}
+
+/* ===== حزمة الأنيميشن الجديدة — دخول البطل وعناصر عائمة ===== */
+@keyframes heroFadeUp {
+    from { opacity: 0; transform: translateY(28px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+@keyframes floatY {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+}
+@keyframes pulseGlow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(0, 171, 85, 0.35); }
+    50% { box-shadow: 0 0 0 12px rgba(0, 171, 85, 0); }
+}
+.hero-content > * {
+    animation: heroFadeUp 0.7s cubic-bezier(0.25, 1, 0.5, 1) both;
+}
+.hero-content > *:nth-child(2) { animation-delay: 0.12s; }
+.hero-content > *:nth-child(3) { animation-delay: 0.24s; }
+.hero-content > *:nth-child(4) { animation-delay: 0.36s; }
+.hero-badge-tag {
+    animation: floatY 4s ease-in-out infinite !important;
+}
+.btn-primary, .hero-cta {
+    animation: pulseGlow 2.5s ease-in-out infinite;
+}
+/* ظهور تدريجي للبطاقات عند التمرير */
+.reveal-on-scroll {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+}
+.reveal-on-scroll.revealed {
+    opacity: 1;
+    transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+    .hero-content > *, .hero-badge-tag, .btn-primary, .hero-cta {
+        animation: none !important;
+    }
+    .reveal-on-scroll { opacity: 1 !important; transform: none !important; }
 }

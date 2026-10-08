@@ -293,3 +293,27 @@ function specialtyName(specialtyId) {
     return hit ? hit.name : (specialtyId || '');
 }
 
+
+/**
+ * ظهور تدريجي للعناصر عند التمرير — يُطبَّق على بطاقات الأطباء والإحصائيات.
+ */
+function initScrollReveal() {
+    const els = document.querySelectorAll('.doctor-card, .stat-box, .analytics-kpi-card');
+    els.forEach((el) => el.classList.add('reveal-on-scroll'));
+    const io = new IntersectionObserver((entries) => {
+        entries.forEach((e) => {
+            if (e.isIntersecting) {
+                e.target.classList.add('revealed');
+                io.unobserve(e.target);
+            }
+        });
+    }, { threshold: 0.12 });
+    els.forEach((el) => io.observe(el));
+    // للبطاقات التي تُرسم لاحقاً (بعد تحميل الأطباء)
+    new MutationObserver(() => {
+        document.querySelectorAll('.doctor-card:not(.reveal-on-scroll)').forEach((el) => {
+            el.classList.add('reveal-on-scroll');
+            io.observe(el);
+        });
+    }).observe(document.body, { childList: true, subtree: true });
+}
