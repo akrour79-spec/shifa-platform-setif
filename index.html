@@ -404,6 +404,9 @@
                     <div>
                         <h3 style="font-size: 1.3rem; font-weight: 800;">جدول مواعيد المرضى لليوم</h3>
                         <p style="color: var(--text-muted); font-size: 0.85rem;">متابعة فورية للحجوزات الإلكترونية وتأكيد الحضور</p>
+                        <span id="doctor-conn-status" style="display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-top: 0.25rem;">
+                            <span class="status-pulse-dot"></span><span>فحص الاتصال…</span>
+                        </span>
                     </div>
                     <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
                         <button id="btn-toggle-booking-status" class="btn-booking-toggle active" data-ui="toggleBookingStatus" title="انقر لإيقاف استقبال المواعيد (اكتمل العدد)">
@@ -699,6 +702,7 @@
                             <span class="kpi-label">إجمالي المواعيد المحجوزة</span>
                             <h4 id="kpi-total-appts" class="kpi-value">-</h4>
                             <small id="kpi-completed-tag" class="kpi-subtext">- موعد مكتمل بنجاح</small>
+                            <small id="kpi-noshow-tag" class="kpi-subtext">- غياب</small>
                         </div>
                     </div>
 
