@@ -340,6 +340,9 @@ function toggleClinicTVMode() {
  * للمواعيد.
  */
 let queueScreenTimer = null;
+/** آخر بيانات ناجحة لشاشة الطابور — تُعرض عند انقطاع الاتصال */
+let queueScreenCache = { data: null, at: 0 };
+
 
 function stopQueueScreenPolling() {
     if (queueScreenTimer) {
@@ -384,6 +387,9 @@ async function refreshQueueScreen() {
         const waiting = Number(data.waitingCount) || 0;
         const remaining = Number(data.stats?.remaining) || 0;
 
+        queueScreenCache.data = data;
+        queueScreenCache.at = Date.now();
+
         setTvScreen({
             number: data.current ? data.current.queue_number : '--',
             name: data.current
@@ -395,24 +401,38 @@ async function refreshQueueScreen() {
                     : 'لا يوجد مرضى آخر في قائمة الانتظار')
                 : `يرجى الانتظار حتى يُنادى دوركم${waiting > 0 ? ` — ${waiting} في الانتظار` : ''}`,
             clinicName: data.clinic?.name || 'عيادة شفاء',
+            stale: false,
         });
 
         // الخادم نفسه يحدّد مدة التحديث بين طلب وآخر
         const seconds = Number(data.refreshAfterSeconds) || 15;
         queueScreenTimer = setTimeout(refreshQueueScreen, seconds * 1000);
     } catch (err) {
-        setTvScreen({
-            number: '--',
-            name: 'تعذّر الاتصال بالخادم',
-            subtitle: err.message || 'تحقّق من اتصال الخادم',
-            clinicName: 'عيادة شفاء',
-        });
+        const cached = queueScreenCache.data;
+        if (cached) {
+            const agoMin = Math.max(1, Math.round((Date.now() - queueScreenCache.at) / 60000));
+            setTvScreen({
+                number: cached.current ? cached.current.queue_number : '--',
+                name: cached.current ? cached.current.patient_name : 'في انتظار المريض التالي',
+                subtitle: `⚠ غير محدّث منذ ${agoMin} د — جاري إعادة المحاولة…`,
+                clinicName: cached.clinic?.name || 'عيادة شفاء',
+                stale: true,
+            });
+        } else {
+            setTvScreen({
+                number: '--',
+                name: 'تعذّر الاتصال بالخادم',
+                subtitle: err.message || 'تحقّق من اتصال الخادم',
+                clinicName: 'عيادة شفاء',
+                stale: true,
+            });
+        }
         // إعادة محاولة أقصر عند الفشل: الخادم قد يكون قيد إعادة التشغيل
         queueScreenTimer = setTimeout(refreshQueueScreen, 5000);
     }
 }
 
-function setTvScreen({ number, name, subtitle, clinicName }) {
+function setTvScreen({ number, name, subtitle, clinicName, stale = false }) {
     const numEl = document.getElementById('tv-number-display');
     const nameEl = document.getElementById('tv-patient-name-display');
     const subEl = document.getElementById('tv-doctor-subtitle');
@@ -422,7 +442,15 @@ function setTvScreen({ number, name, subtitle, clinicName }) {
     if (nameEl) nameEl.textContent = name ? `المريض: ${name}` : 'في انتظار المريض التالي';
     if (subEl) subEl.textContent = subtitle || '';
     if (clinicEl) clinicEl.textContent = clinicName || '';
+    const overlay = document.getElementById('clinic-tv-overlay');
+    if (overlay) overlay.classList.toggle('tv-stale', stale);
 }
+
+window.addEventListener('online', () => {
+    if (document.getElementById('clinic-tv-overlay')?.classList.contains('open')) {
+        refreshQueueScreen();
+    }
+});
 
 function startQueueScreenPolling() {
     stopQueueScreenPolling();
