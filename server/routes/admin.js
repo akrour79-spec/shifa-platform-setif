@@ -42,7 +42,9 @@ router.get('/analytics', optionalAuth, asyncHandler(async (req, res) => {
           (SELECT COUNT(*) FROM public.profiles WHERE role = 'patient') AS total_patients,
           (SELECT COUNT(*) FROM public.appointments) AS total_appointments,
           (SELECT COUNT(*) FROM public.appointments WHERE status = 'completed') AS completed_appointments,
-          (SELECT COUNT(*) FROM public.appointments WHERE status IN ('confirmed', 'waiting')) AS active_appointments
+          (SELECT COUNT(*) FROM public.appointments WHERE status IN ('confirmed', 'waiting')) AS active_appointments,
+          (SELECT COUNT(*) FROM public.appointments WHERE status = 'cancelled') AS cancelled_appointments,
+          (SELECT COUNT(*) FROM public.appointments WHERE status = 'no_show') AS no_show_appointments
       `);
 
       const communeStats = await db.query(`
@@ -104,14 +106,23 @@ router.get('/analytics', optionalAuth, asyncHandler(async (req, res) => {
       const activeClinicsCount = parseInt(kpiRow?.total_active_clinics || 0, 10);
       const estimatedMRR = activeClinicsCount * 7500;
 
+      // نسبة الغياب: ملغاة + لم يحضر، من إجمالي المواعيد — مؤشر جودة للعيادات
+      const totalAppts = parseInt(kpiRow?.total_appointments || 0, 10);
+      const missed = parseInt(kpiRow?.cancelled_appointments || 0, 10)
+        + parseInt(kpiRow?.no_show_appointments || 0, 10);
+      const noShowRate = totalAppts > 0 ? Math.round((missed / totalAppts) * 1000) / 10 : 0;
+
       const payload = {
         kpis: {
           activeClinics: activeClinicsCount,
           pendingClinics: parseInt(kpiRow?.total_pending_clinics || 0, 10),
           totalPatients: parseInt(kpiRow?.total_patients || 0, 10),
-          totalAppointments: parseInt(kpiRow?.total_appointments || 0, 10),
+          totalAppointments: totalAppts,
           completedAppointments: parseInt(kpiRow?.completed_appointments || 0, 10),
           activeAppointments: parseInt(kpiRow?.active_appointments || 0, 10),
+          cancelledAppointments: parseInt(kpiRow?.cancelled_appointments || 0, 10),
+          noShowAppointments: parseInt(kpiRow?.no_show_appointments || 0, 10),
+          noShowRate,
           estimatedMRR,
         },
         communes: communeStats.map(c => ({
