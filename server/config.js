@@ -45,6 +45,9 @@ function collectErrors() {
     if (!process.env.CHARGILY_SECRET_KEY && !process.env.CHARGILY_API_KEY) {
       console.warn('\x1b[33m⚠ تحذير: مفاتيح Chargily غائبة في الإنتاج — الدفع الإلكتروني سيرفض (fail-closed).\x1b[0m');
     }
+    if (!process.env.WHATSAPP_TOKEN || !process.env.WHATSAPP_PHONE_NUMBER_ID) {
+      console.warn('\x1b[33m⚠ تحذير: إعدادات WhatsApp غائبة — التذكيرات ستعمل في وضع السجل فقط.\x1b[0m');
+    }
   }
 
   return errors;

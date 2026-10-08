@@ -113,17 +113,25 @@ async function processPendingNotifications(limit = 20) {
     [limit]
   );
 
+  // الإرسال الحقيقي — whatsapp.js يختار Cloud API إن كان مضبوطاً،
+  // وإلا وضع السجل (لا يرمي خطأ في التطوير)
+  const { sendWhatsApp } = require('./whatsapp');
   const processed = [];
 
   for (const item of pending) {
     try {
-      // محاكاة الإرسال عبر المزود السحابي
-      // في الإنتاج، هنا يتم استدعاء API لـ SMS Gateway أو WhatsApp Cloud API
+      const result = item.channel === 'whatsapp'
+        ? await sendWhatsApp(item.recipient_phone, item.message)
+        : { ok: true, provider: `${item.channel}-log`, messageId: `log-${Date.now()}` };
+
+      if (!result.ok) throw new Error(result.error || 'send_failed');
+
       await db.query(
         `UPDATE public.notifications_outbox
-            SET status = 'sent', sent_at = NOW(), updated_at = NOW()
+            SET status = 'sent', sent_at = NOW(), updated_at = NOW(),
+                provider_message_id = $2, provider = $3
           WHERE id = $1`,
-        [item.id]
+        [item.id, result.messageId || null, result.provider || 'whatsapp']
       );
 
       processed.push({ ...item, status: 'sent', sent_at: new Date().toISOString() });
