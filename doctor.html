@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة شفاء — واجهة الطبيب | إدارة العيادة والمواعيد</title>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Leaflet Maps CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!--
+      ⚠️ أُزيل عميل Supabase من الواجهة بالكامل.
+      كان يتيح للمتصفح الوصول المباشر لقاعدة البيانات بمفتاح anon منشور،
+      أي قراءة وتعديل جدول المواعيد بلا صلاحية. الآن كل البيانات تمرّ
+      عبر الخادم (js/api.js ← Express ← PostgreSQL).
+    -->
+    <!-- Custom Stylesheet -->
+        <!-- PWA Web App Manifest & Mobile Meta Tags -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#059669">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="شفاء سطيف">
+    <link rel="apple-touch-icon" href="/icons/icon-192.svg">
+    <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
+    <link rel="stylesheet" href="css/style.css?v=20261004_v12">
+</head>
+<body>
+<header class="navbar">
+        <div class="nav-container">
+            <a href="#" class="logo-wrap">
+                <div class="logo-badge">ش</div>
+                <div class="logo-text">
+                    <h1>شِـفَـاء <small style="font-size: 0.85rem; font-weight: 500; color: #059669;">سطيف</small></h1>
+                    <span>المنصة الطبية الأولى بولاية سطيف</span>
+                </div>
+            </a>
+
+            
+            <nav class="nav-tabs">
+                <button class="nav-tab-btn active" data-view="doctor">
+                    <i data-lucide="stethoscope" style="width: 16px; height: 16px;"></i>
+                    لوحة الطبيب
+                </button>
+                <button class="nav-tab-btn" data-view="queue">
+                    <i data-lucide="users" style="width: 16px; height: 16px;"></i>
+                    إدارة الطابور
+                </button>
+                <button class="nav-tab-btn" data-view="monetization">
+                    <i data-lucide="crown" style="width: 16px; height: 16px;"></i>
+                    الاشتراك
+                </button>
+                <button class="nav-tab-btn" data-ui="openAdminAnalyticsModal" id="nav-btn-admin-panel" style="display: none;">
+                    <i data-lucide="shield-check" style="width: 16px; height: 16px; color: #0284c7;"></i>
+                    الإحصائيات
+                </button>
+                <a href="index.html" class="nav-tab-btn" style="text-decoration:none;">
+                    <i data-lucide="home" style="width: 16px; height: 16px;"></i>
+                    الرئيسية
+                </a>
+            </nav>
+
+            <!-- Auth Header Action Button & Profile Menu -->
+            <div class="nav-actions" style="display: flex; align-items: center; gap: 0.75rem;">
+                <button id="btn-theme-toggle" class="btn-theme-toggle" data-ui="toggleTheme" title="تبديل المظهر">
+                    <i data-lucide="moon" id="theme-icon-moon" style="width: 17px; height: 17px;"></i>
+                    <i data-lucide="sun" id="theme-icon-sun" style="width: 17px; height: 17px; display: none;"></i>
+                </button>
+                <button id="btn-open-auth" class="btn-auth-nav" data-ui="openAuthModal">
+                    <i data-lucide="user" style="width: 17px; height: 17px;"></i>
+                    <span>تسجيل الدخول</span>
+                </button>
+
+                <div id="user-chip-menu" class="user-chip-dropdown" style="display: none;">
+                    <button id="btn-user-chip-toggle" class="user-chip-btn">
+                        <div class="user-avatar-circle" id="user-avatar-initials">د</div>
+                        <span id="user-name-display" class="user-name-text">د. أحمد بوزيد</span>
+                        <i data-lucide="chevron-down" style="width: 14px; height: 14px; margin-right: 4px;"></i>
+                    </button>
+                    <div id="user-dropdown-popover" class="user-dropdown-popover">
+                        <div class="dropdown-user-header">
+                            <span id="dropdown-role-badge" class="role-badge doctor">طبيب / عيادة</span>
+                            <strong id="dropdown-user-name" class="user-full-name">د. أحمد بوزيد</strong>
+                            <span id="dropdown-user-phone" class="user-phone">0661 22 33 44</span>
+                            <span id="dropdown-user-location" class="user-loc">سطيف المركز</span>
+                        </div>
+                        <div class="dropdown-divider"></div>
+                        <button id="btn-menu-profile" class="dropdown-item">
+                            <i data-lucide="user-cog" style="width: 16px; height: 16px;"></i>
+                            تعديل ملفي الشخصي
+                        </button>
+                        <button id="btn-menu-appointments" class="dropdown-item">
+                            <i data-lucide="calendar-check" style="width: 16px; height: 16px;"></i>
+                            سجل مواعيدي
+                        </button>
+                        <button id="btn-menu-clinic" class="dropdown-item doc-only">
+                            <i data-lucide="layout-dashboard" style="width: 16px; height: 16px;"></i>
+                            لوحة إدارة العيادة
+                        </button>
+                        <div class="dropdown-divider"></div>
+                        <button id="btn-menu-logout" class="dropdown-item text-danger">
+                            <i data-lucide="log-out" style="width: 16px; height: 16px;"></i>
+                            تسجيل الخروج
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+<div id="view-doctor" class="view-panel" style="display: none;">
+            <div id="clinic-pending-banner" style="display: none; background: #fffbeb; border: 1px solid #fcd34d; border-radius: var(--radius-lg); padding: 1rem 1.25rem; margin-bottom: 1.25rem; align-items: flex-start; gap: 0.85rem;">
+                <i data-lucide="clock" style="width: 20px; height: 20px; color: #d97706; flex-shrink: 0; margin-top: 2px;"></i>
+                <div>
+                    <strong style="display: block; color: #92400e; margin-bottom: 0.25rem;">عيادتك بانتظار مراجعة الإدارة</strong>
+                    <p style="color: #92400e; font-size: 0.85rem; line-height: 1.6; margin: 0;">
+                        أُنشئت عيادتك <span id="clinic-pending-name"></span> وسجّلنا طلبك، لكنها لا تظهر بعد للمرضى ولا تقبل حجوزات.
+                        سنتصل بك على رقم الحساب لتأكيد العنوان وموقع العيادة على الخريطة قبل تفعيلها.
+                        ما تراه هنا هو لوحة مُهيّأة مسبقاً، ولا تعني أن عيادتك ظاهرة بعد.
+                    </p>
+                </div>
+            </div>
+            <div style="background: white; border-radius: var(--radius-xl); border: 1px solid var(--border-color); padding: 1.5rem;">
+
+                <div style="display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem;">
+                    <div>
+                        <h3 style="font-size: 1.3rem; font-weight: 800;">جدول مواعيد المرضى لليوم</h3>
+                        <p style="color: var(--text-muted); font-size: 0.85rem;">متابعة فورية للحجوزات الإلكترونية وتأكيد الحضور</p>
+                        <span id="doctor-conn-status" style="display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.75rem; font-weight: 700; color: var(--text-muted); margin-top: 0.25rem;">
+                            <span class="status-pulse-dot"></span><span>فحص الاتصال…</span>
+                        </span>
+                    </div>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <button id="btn-toggle-booking-status" class="btn-booking-toggle active" data-ui="toggleBookingStatus" title="انقر لإيقاف استقبال المواعيد (اكتمل العدد)">
+                            <span class="status-pulse-dot"></span>
+                            <span id="booking-status-label">استقبال المواعيد: مفتوح</span>
+                        </button>
+                        <button class="btn-outline" data-ui="openClinicSettings">
+                            <i data-lucide="settings" style="width: 16px; height: 16px;"></i>
+                            ملف العيادة
+                        </button>
+                        <button class="btn-primary" data-ui="openWalkinModal">
+                            <i data-lucide="user-plus" style="width: 16px; height: 16px;"></i>
+                            مريض عابر
+                        </button>
+                    </div>
+                </div>
+
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; text-align: right;">
+                        <thead>
+                            <tr style="background: #f8fafc; border-bottom: 2px solid var(--border-color); color: var(--text-muted); font-size: 0.85rem;">
+                                <th style="padding: 0.75rem 1rem;">رقم الدور</th>
+                                <th style="padding: 0.75rem 1rem;">اسم المريض</th>
+                                <th style="padding: 0.75rem 1rem;">الهاتف</th>
+                                <th style="padding: 0.75rem 1rem;">الموعد</th>
+                                <th style="padding: 0.75rem 1rem;">بطاقة الشفاء</th>
+                                <th style="padding: 0.75rem 1rem;">الحالة</th>
+                                <th style="padding: 0.75rem 1rem;">إجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="doctor-appointments-tbody">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+                <!-- VIEW 5: Monetization & Income Generator (World-Class SaaS UI) -->
+        
+<div id="view-queue" class="view-panel" style="display: none;">
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem;">
+                
+                <!-- Live Ticket Board with Audio Speech Engine -->
+                <div style="background: linear-gradient(135deg, #0f172a, #1e293b); color: white; padding: 2rem; border-radius: var(--radius-xl); text-align: center; display: flex; flex-direction: column; justify-content: space-between; box-shadow: var(--shadow-apple-md);">
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <span style="display: inline-flex; align-items: center; gap: 6px; background: rgba(16, 185, 129, 0.2); color: #34d399; padding: 0.35rem 0.85rem; border-radius: 9999px; font-size: 0.82rem; font-weight: 700;">
+                                <span style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; display: inline-block;"></span>
+                                🔴 قاعة الانتظار الذكية
+                            </span>
+                            <button class="btn-queue-action" data-ui="toggleClinicTVMode" style="background: rgba(255,255,255,0.1); color: white; border: none;">
+                                <i data-lucide="tv" style="width: 15px; height: 15px;"></i>
+                                شاشة TV العيادة
+                            </button>
+                        </div>
+
+                        <div id="speech-wave-container" class="sound-wave-box" style="display: none; justify-content: center; margin: 0.5rem 0;">
+                            <span></span><span></span><span></span><span></span><span></span>
+                            <small style="color: #34d399; font-weight: 700; margin-right: 6px; font-size: 0.8rem;">جاري النطق الصوتي الآن...</small>
+                        </div>
+
+                        <h4 style="font-size: 1.05rem; opacity: 0.85; margin-bottom: 0.25rem;">المريض الحالي في مكتب الطبيب</h4>
+                        <div id="live-queue-current-name" style="font-size: 1.2rem; font-weight: 800; color: #38bdf8;">د. كريم بوزيد - عيادة سطيف</div>
+                        
+                        <div id="live-queue-current" style="font-size: 5.5rem; font-weight: 900; color: #10b981; line-height: 1; margin: 0.75rem 0; font-family: monospace;">#02</div>
+                        <p id="live-queue-patient-name" style="font-size: 1.1rem; font-weight: 700; color: white; margin-bottom: 1rem;">محمد عبد السلام</p>
+
+                        <!-- Audio Voice Controls -->
+                        <div style="background: rgba(255,255,255,0.05); padding: 0.85rem; border-radius: 14px; border: 1px solid rgba(255,255,255,0.1); margin-top: 0.5rem;">
+                            <label style="display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem; cursor: pointer; color: #e2e8f0;">
+                                <input type="checkbox" id="chk-enable-speech" checked style="accent-color: #10b981; width: 16px; height: 16px;">
+                                📢 نطق صوتي آلي بالعربية (Web Speech Synthesis)
+                            </label>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.25rem; display: flex; flex-direction: column; gap: 0.6rem;">
+                        <button class="btn-primary" style="width: 100%; font-size: 1.05rem; padding: 0.9rem; background: linear-gradient(135deg, #10b981, #0284c7);" data-ui="callNextPatientWithSpeech">
+                            <i data-lucide="volume-2" style="width: 20px; height: 20px;"></i>
+                            استدعاء المريض التالي بصوت تلقائي
+                        </button>
+                        <button class="btn-outline" style="width: 100%; border-color: rgba(255,255,255,0.3); color: white;" data-ui="repeatCurrentCallout">
+                            <i data-lucide="rotate-cw" style="width: 16px; height: 16px;"></i>
+                            إعادة نطق اسم المريض الحالي
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Secretary Patient Queue List & Controls -->
+                <div style="background: white; border-radius: var(--radius-xl); border: 1px solid var(--border-color); padding: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                        <div>
+                            <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--apple-text);">طابور العيادة وإدارة قاعة الانتظار</h3>
+                            <span style="font-size: 0.82rem; color: var(--apple-subtext);">تحكم فوري لمكتب السكرتارية والطبيب</span>
+                        </div>
+                        <button class="btn-primary" style="font-size: 0.85rem; padding: 0.5rem 0.9rem;" data-ui="openWalkinModal">
+                            <i data-lucide="user-plus" style="width: 16px; height: 16px;"></i>
+                            تسجيل مريض مباشر (Walk-in)
+                        </button>
+                    </div>
+
+                    <div id="queue-list">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- VIEW 4: Doctor Portal -->
+        
+        <div id="view-monetization" class="view-panel" style="display: none;">
+            
+            <!-- Hero Header Section with Glow Accent -->
+            <div class="pricing-hero-container">
+                <div class="pricing-hero-badge">
+                    <span class="pulse-dot"></span>
+                    <i data-lucide="sparkles" style="width: 15px; height: 15px; color: #10b981;"></i>
+                    <span>منظومة إدارة العيادات واشتراكات الأطباء الفاخرة | ولاية سطيف</span>
+                </div>
+                
+                <h2 class="pricing-hero-title">
+                    خطط أسعار مرنة تصنع فارقاً في إدارة عيادتك
+                </h2>
+                
+                <p class="pricing-hero-subtitle">
+                    برنامج متكامل يربط عيادتك بالمرضى، ينظم قاعة الانتظار بالشاشة الذكية، ويقلل التغيب بـ إشعارات WhatsApp التلقائية.
+                </p>
+
+                <!-- Billing Cycle Segmented Switcher -->
+                <div class="billing-toggle-wrapper">
+                    <span class="billing-label active" id="label-monthly" data-ui="toggleBillingCycle" data-arg="monthly">
+                        اشتراك شهري
+                    </span>
+                    <button class="billing-toggle-btn" id="billing-toggle" data-ui="toggleBillingCycle" aria-label="تغيير نظام الفوترة">
+                        <span class="billing-toggle-dot"></span>
+                    </button>
+                    <span class="billing-label" id="label-yearly" data-ui="toggleBillingCycle" data-arg="yearly">
+                        اشتراك سنوي
+                        <span class="discount-tag">توفير 20% (شهريين مجاناً)</span>
+                    </span>
+                </div>
+
+                <!-- Algerian Payment Trust Bar -->
+                <div class="payment-partners-bar">
+                    <span class="partners-label">وسائل الدفع المحلية المعتمدة:</span>
+                    <div class="partner-pill">💳 البطاقة الذهبية (بريد الجزائر)</div>
+                    <div class="partner-pill">🏦 بطاقة CIB البنكية</div>
+                    <div class="partner-pill">⚡ Chargily Pay v2</div>
+                    <div class="partner-pill">📮 تحويل بريدي CCP</div>
+                </div>
+            </div>
+
+            <!-- Dynamic Pricing Grid Container -->
+            <div class="pricing-grid" id="pricing-cards-container">
+                <!-- Starter Plan Card -->
+                <div class="pricing-card">
+                    <span class="pricing-badge">14 يوماً مجاناً</span>
+                    <div>
+                        <h4 style="font-size: 1.3rem; font-weight: 800;">الباقة الأساسية (Essential)</h4>
+                        <p style="font-size: 0.85rem; color: var(--apple-subtext); margin-top: 0.25rem;">الأطباء الجدد والعيادات الفردية في سطيف</p>
+                        <div class="price-val">4,900 <small>دج / شهرياً</small></div>
+                        <ul class="feature-list">
+                            <li><i data-lucide="check" style="width: 16px; color: var(--primary-emerald);"></i> حتى 80 حجز موعد شهرياً</li>
+                            <li><i data-lucide="check" style="width: 16px; color: var(--primary-emerald);"></i> ملف شخصي للعيادة على منصة شفاء سطيف</li>
+                            <li><i data-lucide="check" style="width: 16px; color: var(--primary-emerald);"></i> تنبيه SMS أولي للمواعيد</li>
+                            <li><i data-lucide="check" style="width: 16px; color: var(--primary-emerald);"></i> لوحة تحكم الطبيب وجدول المواعيد</li>
+                        </ul>
+                    </div>
+                    <button class="btn-outline" style="width: 100%;" data-ui="openCheckoutModal" data-arg="starter">
+                        <i data-lucide="zap" style="width: 16px; height: 16px;"></i>
+                        اشتراك بالبطاقة الذهبية / CIB
+                    </button>
+                </div>
+
+                <!-- Pro Clinic Plan Card -->
+                <div class="pricing-card featured">
+                    <span class="pricing-badge">الأكثر اختياراً في سطيف</span>
+                    <div>
+                        <h4 style="font-size: 1.3rem; font-weight: 800; color: var(--primary-emerald-dark);">الباقة الكاملة (Complete)</h4>
+                        <p style="font-size: 0.85rem; color: var(--apple-subtext); margin-top: 0.25rem;">العيادات النشطة التي تبحث عن أقصى تنظيم وإنتاجية</p>
+                        <div class="price-val" style="color: var(--primary-emerald-dark);">9,900 <small>دج / شهرياً</small></div>
+                        <ul class="feature-list">
+                            <li><i data-lucide="check" style="width: 16px; color: var(--primary-emerald);"></i> مواعيد غير محدودة طوال الشهر</li>
+                            <li><i data-lucide="check" style="width: 16px; color: var(--primary-emerald);"></i> حساب سكرتارية وإدارة طابور الانتظار الحي (Live Queue)</li>
+                            <li><i data-lucide="check" style="width: 16px; color: var(--primary-emerald);"></i> إشعارات WhatsApp للمرضى للتقليل من التغيب</li>
+                            <li><i data-lucide="check" style="width: 16px; color: var(--primary-emerald);"></i> أولوية الظهور في نتائج البحث لولاية سطيف</li>
+                            <li><i data-lucide="check" style="width: 16px; color: var(--primary-emerald);"></i> سجل إلكتروني لملفات وتاريخ زيارات المرضى</li>
+                        </ul>
+                    </div>
+                    <button class="btn-primary" style="width: 100%; background: linear-gradient(135deg, var(--primary-emerald), #0071e3);" data-ui="openCheckoutModal" data-arg="pro">
+                        <i data-lucide="zap" style="width: 16px; height: 16px;"></i>
+                        اشترك بالبطاقة الذهبية / CIB
+                    </button>
+                </div>
+
+                <!-- Enterprise Plan Card -->
+                <div class="pricing-card">
+                    <span class="pricing-badge">شامل لكل العيادة</span>
+                    <div>
+                        <h4 style="font-size: 1.3rem; font-weight: 800;">الباقة المتكاملة (Enterprise)</h4>
+                        <p style="font-size: 0.85rem; color: var(--apple-subtext); margin-top: 0.25rem;">المراكز الطبية الكبرى، مخابر التحاليل ومراكز الأشعة</p>
+                        <div class="price-val">18,900 <small>دج / شهرياً</small></div>
+                        <ul class="feature-list">
+                            <li><i data-lucide="check" style="width: 16px; color: var(--primary-emerald);"></i> متعدد الأطباء والتخصصات تحت حساب واحد</li>
+                            <li><i data-lucide="check" style="width: 16px; color: var(--primary-emerald);"></i> ربط مباشر لإرسال نتائج التحاليل والأشعة للمريض</li>
+                            <li><i data-lucide="check" style="width: 16px; color: var(--primary-emerald);"></i> تقارير مالية وإحصائية شهرية لمداخيل العيادة</li>
+                            <li><i data-lucide="check" style="width: 16px; color: var(--primary-emerald);"></i> مدير حساب مخصص وتدريب طاقم السكرتارية</li>
+                        </ul>
+                    </div>
+                    <button class="btn-outline" style="width: 100%;" data-ui="openCheckoutModal" data-arg="clinic_enterprise">
+                        <i data-lucide="zap" style="width: 16px; height: 16px;"></i>
+                        اشتراك بالبطاقة الذهبية / CIB
+                    </button>
+                </div>
+            </div>
+
+            <!-- World-Class Comparison Matrix -->
+            <div class="matrix-container">
+                <div class="matrix-header-title">
+                    <div class="matrix-icon-circle">
+                        <i data-lucide="sliders" style="width: 20px; height: 20px; color: var(--primary-emerald);"></i>
+                    </div>
+                    <div>
+                        <h4 style="font-size: 1.25rem; font-weight: 800; color: var(--apple-text); margin: 0;">جدول المقارنة الشامل لميزات المنصة</h4>
+                        <p style="font-size: 0.83rem; color: var(--apple-subtext); margin-top: 2px;">استعرض الخصائص الدقيقة لكل باقة واختر ما يناسب نشاط عيادتك</p>
+                    </div>
+                </div>
+                
+                <div class="comparison-table-wrapper">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 38%;">الميزة / الخاصية</th>
+                                <th style="width: 20%; text-align: center;">الباقة الأساسية (Essential)</th>
+                                <th style="width: 22%; text-align: center; background: rgba(16, 185, 129, 0.08); color: var(--primary-emerald-dark);">الباقة الكاملة (Complete) ⭐</th>
+                                <th style="width: 20%; text-align: center;">الباقة المتكاملة (Enterprise)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>حجوزات المواعيد الشهرية</strong></td>
+                                <td style="text-align: center;">حتى 80 موعد/شهر</td>
+                                <td style="text-align: center; font-weight: 800; color: var(--primary-emerald-dark); background: rgba(16, 185, 129, 0.04);">غير محدود ♾️</td>
+                                <td style="text-align: center;">غير محدود ♾️</td>
+                            </tr>
+                            <tr>
+                                <td><strong>ملف العيادة والظهور في سطيف</strong></td>
+                                <td style="text-align: center;" class="feature-check">✔ ملف موثق</td>
+                                <td style="text-align: center; background: rgba(16, 185, 129, 0.04);" class="feature-check">✔ أولوية ظهور ممتازة</td>
+                                <td style="text-align: center;" class="feature-check">✔ إبراز خاص بالصدارة</td>
+                            </tr>
+                            <tr>
+                                <td><strong>شاشة قاعة الانتظار (Live Queue TV)</strong></td>
+                                <td style="text-align: center;" class="feature-cross">✖ غير متاح</td>
+                                <td style="text-align: center; background: rgba(16, 185, 129, 0.04);" class="feature-check">✔ متاح + نطق صوتي للنداء</td>
+                                <td style="text-align: center;" class="feature-check">✔ شاشات متعددة</td>
+                            </tr>
+                            <tr>
+                                <td><strong>حساب السكرتارية المستقل</strong></td>
+                                <td style="text-align: center;" class="feature-cross">✖ غير متاح</td>
+                                <td style="text-align: center; background: rgba(16, 185, 129, 0.04);" class="feature-check">✔ متاح كامل</td>
+                                <td style="text-align: center;" class="feature-check">✔ أطقم سكرتارية متعددة</td>
+                            </tr>
+                            <tr>
+                                <td><strong>تنبيهات وتأكيدات عبر WhatsApp</strong></td>
+                                <td style="text-align: center;" class="feature-cross">✖ رسائل SMS فقط</td>
+                                <td style="text-align: center; background: rgba(16, 185, 129, 0.04);" class="feature-check">✔ إشعارات واتساب آمنة</td>
+                                <td style="text-align: center;" class="feature-check">✔ حملات تذكير مخصصة</td>
+                            </tr>
+                            <tr>
+                                <td><strong>تسليم نتائج التحاليل والأشعة الطبية</strong></td>
+                                <td style="text-align: center;" class="feature-cross">✖ غير متاح</td>
+                                <td style="text-align: center; background: rgba(16, 185, 129, 0.04);" class="feature-cross">✖ غير متاح</td>
+                                <td style="text-align: center;" class="feature-check">✔ ربط وتسليم مباشر للتطبيق</td>
+                            </tr>
+                            <tr>
+                                <td><strong>دعم بطاقات الشفاء (CNAS / CASNOS)</strong></td>
+                                <td style="text-align: center;" class="feature-check">✔ متاح</td>
+                                <td style="text-align: center; background: rgba(16, 185, 129, 0.04);" class="feature-check">✔ متاح مع سجل مرضى متكامل</td>
+                                <td style="text-align: center;" class="feature-check">✔ تقارير مالية وتصدير البيانات</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- FAQ Section Accordion for Clinics & Doctors -->
+            <div class="faq-pricing-section">
+                <h4 style="font-size: 1.3rem; font-weight: 800; color: var(--apple-text); text-align: center; margin-bottom: 1.5rem;">
+                    ❓ الأسئلة الشائعة للأطباء والعيادات
+                </h4>
+                <div class="faq-grid">
+                    <div class="faq-card">
+                        <h5>كيف تعمل فترة التجربة المجانية لمدة 30 يوماً؟</h5>
+                        <p>عند تسجيل حساب الطبيب، تتفعل الباقات مجاناً لمدة شهر كامل لتجربة نظام إدارة المواعيد وقاعة الانتظار دون أي التزام مالي.</p>
+                    </div>
+                    <div class="faq-card">
+                        <h5>هل يحتاج المريض لتطبيب خاص أو دفع أي رسوم؟</h5>
+                        <p>لا إطلاقاً، المنصة مجانية 100% لجميع المرضى بولاية سطيف لحجز المواعيد ومتابعة دورهم في قاعة الانتظار.</p>
+                    </div>
+                    <div class="faq-card">
+                        <h5>كيف يتم تفعيل شاشة قاعة الانتظار على التلفزيون؟</h5>
+                        <p>ببساطة عبر فتح متصفح التلفزيون الذكي أو ربطه بهاتف العيادة، والدخول لـ "بوابة شاشة الانتظار" لتظهر الأرقام والنداء الصوتي آلياً.</p>
+                    </div>
+                    <div class="faq-card">
+                        <h5>ما هي وسائل الدفع المقبولة لتجديد الاشتراك؟</h5>
+                        <p>ندعم البطاقة الذهبية لبريد الجزائر، بطاقات CIB البنكية عبر بوابة Chargily Pay المشفرة، أو التحويل البريدي المباشر عبر حساب CCP.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Subscriptions Feed & MRR Tracker -->
+            <div style="background: white; border-radius: var(--radius-apple); border: 1px solid var(--apple-border); padding: 1.75rem; box-shadow: var(--shadow-apple-sm); margin-top: 3rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                    <div>
+                        <h4 style="font-size: 1.25rem; font-weight: 800; color: var(--apple-text);">سجل العيادات النشطة والمداخيل بولاية سطيف</h4>
+                        <p style="font-size: 0.85rem; color: var(--apple-subtext);">متابعة حية للاشتراكات المفعلة والمداخيل الشهرية المباشرة (MRR)</p>
+                    </div>
+                    <span style="background: var(--primary-emerald-light); color: var(--primary-emerald-dark); font-weight: 800; padding: 0.4rem 1rem; border-radius: var(--radius-pill); font-size: 0.9rem;">
+                        🟢 جميع العيادات موثقة بسطيف
+                    </span>
+                </div>
+                <div id="subscriptions-list">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <!-- SECTION: Admin Analytics & Setif Healthcare Intelligence -->
+            <div id="admin-analytics-section" class="admin-analytics-container" style="margin-top: 3rem;">
+                <div class="section-header-analytics" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <h3 style="font-size: 1.5rem; font-weight: 800; color: var(--apple-text); display: flex; align-items: center; gap: 0.5rem;">
+                            <i data-lucide="line-chart" style="width: 24px; height: 24px; color: var(--primary-emerald);"></i>
+                            تحليلات وإحصائيات قطاع الصحة بولاية سطيف
+                        </h3>
+                        <p style="font-size: 0.9rem; color: var(--apple-subtext); margin-top: 0.25rem;">
+                            مؤشرات حية لتوزيع الحجوزات حسب البلديات، التخصصات الأكثر طلباً، وساعات الذروة بالولاية
+                        </p>
+                    </div>
+                    <button class="btn-outline" data-ui="refreshAdminAnalytics" style="display: flex; align-items: center; gap: 0.5rem; font-weight: 700;">
+                        <i data-lucide="refresh-cw" style="width: 16px; height: 16px;"></i>
+                        تحديث البيانات الحية
+                    </button>
+                </div>
+
+                <!-- KPI Quick Cards Grid -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
+                    <div class="analytics-kpi-card">
+                        <div class="kpi-icon-wrapper" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+                            <i data-lucide="building-2" style="width: 22px; height: 22px;"></i>
+                        </div>
+                        <div class="kpi-data">
+                            <span class="kpi-label">العيادات النشطة في سطيف</span>
+                            <h4 id="kpi-active-clinics" class="kpi-value">-</h4>
+                            <small id="kpi-pending-tag" class="kpi-subtext">0 عيادات بانتظار الاعتماد</small>
+                        </div>
+                    </div>
+
+                    <div class="analytics-kpi-card">
+                        <div class="kpi-icon-wrapper" style="background: rgba(2, 132, 199, 0.1); color: #0284c7;">
+                            <i data-lucide="calendar-check" style="width: 22px; height: 22px;"></i>
+                        </div>
+                        <div class="kpi-data">
+                            <span class="kpi-label">إجمالي المواعيد المحجوزة</span>
+                            <h4 id="kpi-total-appts" class="kpi-value">-</h4>
+                            <small id="kpi-completed-tag" class="kpi-subtext">- موعد مكتمل بنجاح</small>
+                            <small id="kpi-noshow-tag" class="kpi-subtext">- غياب</small>
+                        </div>
+                    </div>
+
+                    <div class="analytics-kpi-card">
+                        <div class="kpi-icon-wrapper" style="background: rgba(124, 58, 237, 0.1); color: #7c3aed;">
+                            <i data-lucide="users" style="width: 22px; height: 22px;"></i>
+                        </div>
+                        <div class="kpi-data">
+                            <span class="kpi-label">المرضى المسجلون بالولاية</span>
+                            <h4 id="kpi-total-patients" class="kpi-value">-</h4>
+                            <small class="kpi-subtext">حسابات موثقة برقم الجزائر</small>
+                        </div>
+                    </div>
+
+                    <div class="analytics-kpi-card">
+                        <div class="kpi-icon-wrapper" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">
+                            <i data-lucide="trending-up" style="width: 22px; height: 22px;"></i>
+                        </div>
+                        <div class="kpi-data">
+                            <span class="kpi-label">المداخيل الشهرية التقديرية (MRR)</span>
+                            <h4 id="kpi-mrr-value" class="kpi-value">-</h4>
+                            <small class="kpi-subtext">دج / شهرياً (اشتراكات العيادات)</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Two-Column Breakdown: Communes & Specialties -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                    <!-- Communes Distribution Card -->
+                    <div style="background: var(--apple-card-bg, white); border-radius: var(--radius-apple); border: 1px solid var(--apple-border); padding: 1.5rem; box-shadow: var(--shadow-apple-sm);">
+                        <h4 style="font-size: 1.15rem; font-weight: 800; color: var(--apple-text); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <i data-lucide="map-pin" style="width: 18px; height: 18px; color: #0284c7;"></i>
+                            توزيع الحجوزات حسب بلديات سطيف
+                        </h4>
+                        <div id="admin-communes-list" style="display: flex; flex-direction: column; gap: 0.85rem;">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Specialties Demand Card -->
+                    <div style="background: var(--apple-card-bg, white); border-radius: var(--radius-apple); border: 1px solid var(--apple-border); padding: 1.5rem; box-shadow: var(--shadow-apple-sm);">
+                        <h4 style="font-size: 1.15rem; font-weight: 800; color: var(--apple-text); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <i data-lucide="activity" style="width: 18px; height: 18px; color: #10b981;"></i>
+                            التخصصات الطبية الأكثر طلباً
+                        </h4>
+                        <div id="admin-specialties-list" style="display: flex; flex-direction: column; gap: 0.85rem;">
+                            <!-- Populated by JS -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pending Clinics Approval Table (إدارة اعتماد العيادات المسجلة) -->
+                <div style="background: var(--apple-card-bg, white); border-radius: var(--radius-apple); border: 1px solid var(--apple-border); padding: 1.5rem; box-shadow: var(--shadow-apple-sm); margin-bottom: 2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+                        <h4 style="font-size: 1.15rem; font-weight: 800; color: var(--apple-text); display: flex; align-items: center; gap: 0.5rem;">
+                            <i data-lucide="shield-check" style="width: 18px; height: 18px; color: #f59e0b;"></i>
+                            طلبات اعتماد العيادات المسجلة حديثاً (Pending Clinics)
+                        </h4>
+                        <span id="pending-clinics-count-badge" style="background: rgba(245, 158, 11, 0.15); color: #b45309; padding: 0.25rem 0.75rem; border-radius: 20px; font-weight: 700; font-size: 0.85rem;">
+                            0 طلب بانتظار المراجعة
+                        </span>
+                    </div>
+                    <div id="pending-clinics-container">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+<div id="auth-modal" class="modal-overlay">
+        <div class="modal-content auth-modal-card">
+            <div class="modal-header auth-header">
+                <div class="auth-header-title">
+                    <div class="auth-logo-badge">ش</div>
+                    <div>
+                        <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800;">بوابة حسابات شِـفَـاء سطيف</h3>
+                        <p style="margin: 2px 0 0 0; font-size: 0.8rem; opacity: 0.9;">ادخل إلى حسابك لمتابعة دورك وحجوزاتك بكل أمان</p>
+                    </div>
+                </div>
+                <button class="modal-close" data-ui="closeAuthModal">&times;</button>
+            </div>
+
+            <div class="modal-body" style="padding: 1.5rem;">
+                <!-- Mode Switcher Tabs -->
+                <div class="auth-tab-switcher">
+                    <button id="auth-tab-login" class="auth-tab-btn active" data-ui="switchAuthTab" data-arg="login">
+                        <i data-lucide="log-in" style="width: 16px; height: 16px;"></i>
+                        تسجيل الدخول
+                    </button>
+                    <button id="auth-tab-signup" class="auth-tab-btn" data-ui="switchAuthTab" data-arg="signup">
+                        <i data-lucide="user-plus" style="width: 16px; height: 16px;"></i>
+                        إنشاء حساب جديد
+                    </button>
+                </div>
+
+                <!-- Role Selector (Doctor vs Patient) -->
+                <div class="auth-role-selector">
+                    <span class="role-selector-label">نوع الحساب:</span>
+                    <div class="role-pills">
+                        <label class="role-pill-btn active" id="role-pill-patient">
+                            <input type="radio" name="auth_role" value="patient" checked data-change="handleAuthRoleChange" data-arg="patient">
+                            <i data-lucide="user" style="width: 16px; height: 16px;"></i>
+                            👤 حساب مريض
+                        </label>
+                        <label class="role-pill-btn" id="role-pill-doctor">
+                            <input type="radio" name="auth_role" value="doctor" data-change="handleAuthRoleChange" data-arg="doctor">
+                            <i data-lucide="stethoscope" style="width: 16px; height: 16px;"></i>
+                            👨‍⚕️ طبيب / عيادة
+                        </label>
+                    </div>
+                </div>
+
+                <!-- 1. LOGIN FORM -->
+                <form id="form-auth-login" data-submit="handleLoginSubmit" class="auth-form-panel">
+                    <div class="search-field" style="margin-bottom: 1rem;">
+                        <label><i data-lucide="phone" style="width: 14px; height: 14px; color: var(--primary);"></i> رقم الهاتف الجزائري  *</label>
+                        <input type="text" id="login-identifier" class="search-input" placeholder="مثال: 0661998877" required autocomplete="username">
+                    </div>
+
+                    <div class="search-field" style="margin-bottom: 1.25rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <label><i data-lucide="lock" style="width: 14px; height: 14px; color: var(--primary);"></i> كلمة السر *</label>
+                            <a href="#" data-ui="showForgotPassword" style="font-size: 0.78rem; color: var(--primary); text-decoration: none; font-weight: 500;">نسيت كلمة السر؟</a>
+                        </div>
+                        <div style="position: relative;">
+                            <input type="password" id="login-password" class="search-input" placeholder="••••••••" required autocomplete="current-password">
+                            <button type="button" class="btn-toggle-pw" data-ui="togglePasswordVisibility" data-arg="login-password">
+                                <i data-lucide="eye" style="width: 16px; height: 16px;"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
+                        <label style="display: flex; align-items: center; gap: 6px; font-size: 0.85rem; cursor: pointer; color: var(--apple-text);">
+                            <input type="checkbox" id="login-remember" checked style="accent-color: var(--primary-emerald);">
+                            تذكر حسابي على هذا الجهاز
+                        </label>
+                    </div>
+
+                    <button type="submit" id="btn-submit-login" class="btn-primary" style="width: 100%; font-size: 1rem; padding: 0.85rem; border-radius: 14px; background: linear-gradient(135deg, var(--primary-emerald), var(--accent-blue));">
+                        <i data-lucide="arrow-left" style="width: 18px; height: 18px;"></i>
+                        تسجيل الدخول إلى حسابي
+                    </button>
+
+                    <!-- Quick Demo Credentials bar -->
+                    <div class="demo-auth-box">
+                        <div class="demo-box-title">⚡ تجربة سريعة بنقرة واحدة (Quick Demo Login):</div>
+                        <div class="demo-btn-group" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                            <button type="button" class="btn-demo-quick btn-demo-admin" data-ui="quickDemoLogin" data-arg="admin">
+                                🛡️ دخول كـ مشرف (مالك المنصة)
+                            </button>
+                            <button type="button" class="btn-demo-quick" data-ui="quickDemoLogin" data-arg="doctor">
+                                👨‍⚕️ دخول كطبيب (د. أمينة)
+                            </button>
+                            <button type="button" class="btn-demo-quick" data-ui="quickDemoLogin" data-arg="patient">
+                                👤 دخول كمريض (محمد)
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- 2. SIGNUP FORM -->
+                <form id="form-auth-signup" data-submit="handleSignupSubmit" class="auth-form-panel" style="display: none;">
+                    <div class="search-field" style="margin-bottom: 0.85rem;">
+                        <label><i data-lucide="user" style="width: 14px; height: 14px; color: var(--primary);"></i> الاسم واللقب الكامل *</label>
+                        <input type="text" id="signup-fullname" class="search-input" placeholder="مثال: د. ياسين بوشارب أو كريم بن حمودة" required>
+                    </div>
+
+                    <div class="search-field" style="margin-bottom: 0.85rem;">
+                        <label><i data-lucide="phone" style="width: 14px; height: 14px; color: var(--primary);"></i> رقم الهاتف (الجزائر) *</label>
+                        <input type="tel" id="signup-phone" class="search-input" placeholder="06XX XX XX XX أو 07XX XX XX XX" maxlength="10" required>
+                    </div>
+
+                    <div class="search-field" style="margin-bottom: 0.85rem;">
+                        <label><i data-lucide="map-pin" style="width: 14px; height: 14px; color: var(--primary);"></i> بلدية الإقامة / العيادة بولاية سطيف *</label>
+                        <select id="signup-commune" class="search-select" required>
+                                  <option value="">اختر البلدية...</option>
+                              </select>
+                    </div>
+
+                    <!-- Doctor Specific Fields -->
+                    <div id="signup-doctor-fields" style="display: none; background: #f0fdf4; padding: 0.85rem; border-radius: 12px; border: 1px solid #bbf7d0; margin-bottom: 0.85rem;">
+                        <div class="search-field" style="margin-bottom: 0.75rem;">
+                            <label><i data-lucide="stethoscope" style="width: 14px; height: 14px; color: #166534;"></i> التخصص الطبي *</label>
+                            <select id="signup-specialty" class="search-select">
+                                  <option value="">اختر التخصص...</option>
+                              </select>
+                        </div>
+                        <div class="search-field" style="margin-bottom: 0.75rem;">
+                            <label><i data-lucide="building-2" style="width: 14px; height: 14px; color: #166534;"></i> اسم العيادة أو المركز الطبي</label>
+                            <input type="text" id="signup-clinic-name" class="search-input" placeholder="مثال: عيادة الهضاب للشفاء">
+                        </div>
+                        <div class="search-field" style="margin-bottom: 0.75rem;">
+                          <label><i data-lucide="map-pin" style="width: 14px; height: 14px; color: #166534;"></i> عنوان العيادة *</label>
+                          <input type="text" id="signup-address" class="search-input" maxlength="200" placeholder="مثال: شارع العربي بن مهيدي، سطيف">
+                        </div>
+                        <div class="search-field" style="margin-bottom: 0.75rem;">
+                          <label><i data-lucide="phone-call" style="width: 14px; height: 14px; color: #166534;"></i> هاتف العيادة *</label>
+                          <input type="tel" id="signup-clinic-phone" class="search-input" maxlength="16" placeholder="مثال: 036 92 45 10">
+                        </div>
+                        <label style="display: flex; align-items: center; gap: 8px; font-size: 0.82rem; color: #166534; font-weight: 600; cursor: pointer;">
+                            <input type="checkbox" id="signup-has-chifa" checked style="accent-color: #16a34a;">
+                            نقبل بطاقة الشفاء (CNAS / CASNOS) بالعيادة
+                        </label>
+                        <div class="clinic-pending-note">
+                          <i data-lucide="shield-check" style="width: 15px; height: 15px; flex-shrink: 0;"></i>
+                          <span>تُنشأ عيادتك مباشرةً ولكن تبقى بانتظار مراجعة الإدارة قبل ظهورها للمرضى. سنتصل بك على رقم الحساب لتأكيد العنوان والإحداثيات.</span>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
+                        <div class="search-field">
+                            <label>كلمة السر *</label>
+                            <input type="password" id="signup-password" class="search-input" placeholder="8 أحرف على الأقل" required minlength="8">
+                        </div>
+                        <div class="search-field">
+                            <label>تأكيد كلمة السر *</label>
+                            <input type="password" id="signup-confirm-password" class="search-input" placeholder="إعادة الكتابة" required minlength="8">
+                        </div>
+                    </div>
+
+                    <label style="display: flex; align-items: flex-start; gap: 6px; font-size: 0.78rem; color: var(--apple-subtext); margin-bottom: 1rem; cursor: pointer;">
+                        <input type="checkbox" id="signup-terms" required checked style="margin-top: 3px; accent-color: var(--primary-emerald);">
+                        أوافق على الشروط والأحكام والسياسة الخصوصية لمنصة شفاء سطيف
+                    </label>
+
+                    <button type="submit" id="btn-submit-signup" class="btn-primary" style="width: 100%; font-size: 1rem; padding: 0.85rem; border-radius: 14px; background: linear-gradient(135deg, var(--primary-emerald), #0284c7);">
+                        <i data-lucide="user-check" style="width: 18px; height: 18px;"></i>
+                        تأكيد وإيقاد الحساب الآن
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 5: User Profile & Appointments Management (الملف الشخصي والمواعيد) -->
+    
+<div id="clinic-settings-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 640px;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #0e9f6e, #0284c7); color: white;">
+                <h3 style="display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="settings" style="width: 20px; height: 20px;"></i>
+                    ملف عيادتي
+                </h3>
+                <button class="modal-close" data-ui="closeClinicSettings">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 1.5rem;">
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+                    هذه البيانات تظهر مباشرة في صفحة الأطباء لكل زوّار المنصة.
+                </p>
+
+                <form id="form-clinic-settings" data-submit="handleClinicSettingsSubmit">
+                    <div class="search-field" style="margin-bottom: 1rem;">
+                        <label>اسم الطبيب / العيادة *</label>
+                        <input type="text" id="clinic-name" class="search-input" required maxlength="80">
+                    </div>
+
+                    <div class="search-field" style="margin-bottom: 1rem;">
+                        <label>التخصص المعلن *</label>
+                        <input type="text" id="clinic-title" class="search-input" required maxlength="120">
+                    </div>
+
+                    <div class="search-field" style="margin-bottom: 1rem;">
+                        <label>العنوان *</label>
+                        <input type="text" id="clinic-address" class="search-input" required maxlength="200">
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <div class="search-field">
+                            <label>رقم الهاتف</label>
+                            <input type="tel" id="clinic-phone" class="search-input" placeholder="05XX XX XX XX">
+                        </div>
+                        <div class="search-field">
+                            <label>سعر الكشف (دج)</label>
+                            <input type="number" id="clinic-price" class="search-input" min="0" step="50">
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <div class="search-field">
+                            <label>بداية الدوام</label>
+                            <input type="time" id="clinic-work-start" class="search-input">
+                        </div>
+                        <div class="search-field">
+                            <label>نهاية الدوام</label>
+                            <input type="time" id="clinic-work-end" class="search-input">
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <div class="search-field">
+                            <label>أيام العمل</label>
+                            <input type="text" id="clinic-days" class="search-input" maxlength="80" placeholder="السبت - الخميس">
+                        </div>
+                        <div class="search-field">
+                            <label>مدة الموعد (دقيقة)</label>
+                            <select id="clinic-slot-minutes" class="search-select">
+                                <option value="10">10 دقائق</option>
+                                <option value="15">15 دقيقة</option>
+                                <option value="20">20 دقيقة</option>
+                                <option value="30" selected>30 دقيقة</option>
+                                <option value="45">45 دقيقة</option>
+                                <option value="60">60 دقيقة</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; cursor: pointer; margin-bottom: 1.25rem;">
+                        <input type="checkbox" id="clinic-has-chifa" checked style="accent-color: #10b981;">
+                        العيادة تقبل بطاقة الشفاء (CNAS / CASNOS)
+                    </label>
+
+                    <button type="submit" class="btn-primary" id="btn-save-clinic" style="width: 100%; padding: 0.85rem; font-size: 1rem;">
+                        <i data-lucide="save" style="width: 18px; height: 18px;"></i>
+                        حفظ التغييرات
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 6: Walk-in Patient Direct Registration (تسجيل مريض مباشر بالسكرتارية) -->
+    
+<div id="walkin-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #059669, #0d9488); color: white;">
+                <h3 style="display: flex; align-items: center; gap: 8px;">
+                    <i data-lucide="user-plus" style="width: 20px; height: 20px;"></i>
+                    إضافة مريض مباشر لقاعة الانتظار (Walk-In)
+                </h3>
+                <button class="modal-close" data-ui="closeWalkinModal">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 1.5rem;">
+                <form id="form-walkin-patient" data-submit="handleWalkinSubmit">
+                    <div class="search-field" style="margin-bottom: 1rem;">
+                        <label>اسم المريض الكامل *</label>
+                        <input type="text" id="walkin-name" class="search-input" placeholder="مثال: عبد القادر عثماني" required>
+                    </div>
+
+                    <div class="search-field" style="margin-bottom: 1rem;">
+                        <label>رقم الهاتف *</label>
+                        <input type="tel" id="walkin-phone" class="search-input" placeholder="0661XX XX XX" required>
+                    </div>
+
+                    <div class="search-field" style="margin-bottom: 1rem;">
+                        <label>الطبيب المعالج في العيادة</label>
+                        <select id="walkin-doctor-select" class="search-select">
+                            <!-- Populated by JS -->
+                        </select>
+                    </div>
+
+                    <label style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; cursor: pointer; margin-bottom: 1.25rem;">
+                        <input type="checkbox" id="walkin-chifa" checked style="accent-color: #10b981;">
+                        يحمل بطاقة الشفاء (CNAS / CASNOS)
+                    </label>
+
+                    <button type="submit" class="btn-primary" style="width: 100%; padding: 0.85rem; font-size: 1rem; background: linear-gradient(135deg, #10b981, #0284c7);">
+                        <i data-lucide="plus-circle" style="width: 18px; height: 18px;"></i>
+                        إدخال المريض لطابور الانتظار ومنحه تذكرة
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    
+    <!-- Modal 7: Electronic Medical Prescription (الوصفة الطبية الإلكترونية) -->
+    
+<div id="prescription-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 720px; border-radius: 20px;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #0284c7, #0369a1); color: white; border-radius: 20px 20px 0 0;">
+                <h3 style="display: flex; align-items: center; gap: 8px; margin: 0; font-size: 1.2rem;">
+                    <i data-lucide="file-text" style="width: 22px; height: 22px;"></i>
+                    تحرير وصفة طبية إلكترونية (Ordonnance Médicale)
+                </h3>
+                <button class="modal-close" data-ui="closePrescriptionModal" style="color: white; background: rgba(255,255,255,0.2);">&times;</button>
+            </div>
+            <div class="modal-body" style="padding: 1.5rem;" id="prescription-print-area">
+                <!-- Prescription Header / Clinic Letterhead -->
+                <div style="border-bottom: 2px solid #e2e8f0; padding-bottom: 1rem; margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <h2 id="presc-doctor-name" style="margin: 0; color: #0f172a; font-size: 1.25rem; font-weight: 800;">د. أحمد بوزيد</h2>
+                        <div id="presc-doctor-title" style="color: #0284c7; font-weight: 600; font-size: 0.9rem;">أخصائي في الطب العام والاستعجالي</div>
+                        <div id="presc-clinic-address" style="color: #64748b; font-size: 0.82rem; margin-top: 4px;">حي 1014 مسكن، سطيف | هاتف: 036 92 45 10</div>
+                    </div>
+                    <div style="text-align: left; background: #f8fafc; padding: 0.5rem 0.85rem; border-radius: 12px; border: 1px solid #e2e8f0;">
+                        <div style="font-weight: 700; color: #334155; font-size: 0.85rem;">الجمهورية الجزائرية الديمقراطية الشعبية</div>
+                        <div style="font-size: 0.78rem; color: #64748b;">وزارة الصحة والسكان وإصلاح المستشفيات</div>
+                    </div>
+                </div>
+
+                <!-- Patient & Date Bar -->
+                <div style="background: #f1f5f9; padding: 0.75rem 1rem; border-radius: 12px; margin-bottom: 1.25rem; display: flex; justify-content: space-between; font-size: 0.9rem; font-weight: 600;">
+                    <div>المريض(ة): <span id="presc-patient-name" style="color: #0369a1; font-weight: 800;">عبد القادر عثماني</span></div>
+                    <div>التاريخ: <span id="presc-date" style="color: #334155;">04/10/2026</span></div>
+                </div>
+
+                <!-- Prescription Title -->
+                <div style="text-align: center; font-size: 1.4rem; font-weight: 900; letter-spacing: 2px; color: #0f172a; margin-bottom: 1rem; font-family: sans-serif;">
+                    ORDONNANCE
+                </div>
+
+                <!-- Medications Table -->
+                <div style="margin-bottom: 1rem;">
+                    <table style="width: 100%; border-collapse: collapse; margin-bottom: 0.75rem;" id="presc-meds-table">
+                        <thead>
+                            <tr style="background: #f8fafc; border-bottom: 2px solid #cbd5e1; text-align: right; font-size: 0.85rem; color: #475569;">
+                                <th style="padding: 0.5rem; width: 45%;">الدواء (Médicament)</th>
+                                <th style="padding: 0.5rem; width: 35%;">الجرعة والمدة (Posologie)</th>
+                                <th style="padding: 0.5rem; width: 20%; text-align: center;" class="no-print">إجراء</th>
+                            </tr>
+                        </thead>
+                        <tbody id="presc-meds-body">
+                            <!-- Injected by JS -->
+                        </tbody>
+                    </table>
+                    <button type="button" class="btn-outline no-print" data-ui="addMedicationRow" style="font-size: 0.85rem; padding: 0.4rem 0.85rem; border-radius: 10px;">
+                        <i data-lucide="plus" style="width: 14px; height: 14px;"></i>
+                        إضافة دواء للوصفة
+                    </button>
+                </div>
+
+                <!-- Notes / Instructions -->
+                <div style="margin-bottom: 1.25rem;">
+                    <label style="font-size: 0.85rem; font-weight: 700; color: #334155; display: block; margin-bottom: 4px;">إرشادات وتوصيات طبية إضافية:</label>
+                    <textarea id="presc-notes" rows="2" class="search-input" style="font-size: 0.85rem;" placeholder="مثال: الراحة التامة، شرب كميات كافية من الماء، مراجعة العيادة بعد 7 أيام..."></textarea>
+                </div>
+
+                <!-- Doctor Signature & Stamp Area -->
+                <div style="display: flex; justify-content: flex-end; margin-top: 1.5rem; padding-top: 1rem; border-top: 1px dashed #cbd5e1;">
+                    <div style="text-align: center; min-width: 180px;">
+                        <div style="font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 2.5rem;">توقيع وخاتم الطبيب:</div>
+                        <div style="font-size: 0.8rem; color: #94a3b8; border-top: 1px solid #cbd5e1; padding-top: 4px;">Cachet & Signature</div>
+                    </div>
+                </div>
+
+                <!-- Action Footer (Hidden on print) -->
+                <div class="no-print" style="display: flex; gap: 0.75rem; justify-content: flex-end; margin-top: 1.5rem; border-top: 1px solid #e2e8f0; padding-top: 1rem;">
+                    <button type="button" class="btn-outline" data-ui="closePrescriptionModal">إلغاء</button>
+                    <button type="button" class="btn-primary" data-ui="sendPrescriptionWhatsApp" style="background: #25d366; border-color: #25d366;">
+                        <i data-lucide="message-square" style="width: 16px; height: 16px;"></i>
+                        إرسال عبر WhatsApp
+                    </button>
+                    <button type="button" class="btn-primary" data-ui="printPrescription">
+                        <i data-lucide="printer" style="width: 16px; height: 16px;"></i>
+                        طباعة الوصفة الطبية
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Clinic Fullscreen TV Overlay Screen (شاشة العرض الحية لقاعة الانتظار على التلفزيون) -->
+    <!-- Emergency & Night Pharmacies Modal (صيدليات المناوبة والمصالح المستعجلة) -->
+    
+<div id="patient-history-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 780px;">
+            <div class="modal-header">
+                <h3 style="display: flex; align-items: center; gap: 0.5rem;">
+                    <i data-lucide="file-text" style="width: 22px; height: 22px; color: var(--primary-emerald);"></i>
+                    الفيشة الطبية والسجل المباشر للمريض
+                </h3>
+                <button class="btn-close" data-ui="closePatientHistoryModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Patient Profile Header Banner -->
+                <div style="background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(2,132,199,0.08)); border: 1px solid var(--apple-border); padding: 1.25rem; border-radius: 12px; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem;">
+                    <div>
+                        <h4 id="med-history-patient-name" style="font-weight: 800; font-size: 1.2rem; color: var(--apple-text);">اسم المريض</h4>
+                        <p id="med-history-patient-phone" style="font-size: 0.85rem; color: var(--apple-subtext); font-family: monospace; margin-top: 0.2rem;">06xx xx xx xx</p>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span id="med-history-chifa-badge" style="background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; padding: 0.35rem 0.85rem; border-radius: 20px; font-size: 0.85rem; font-weight: 700;">
+                            💳 يحمل بطاقة الشفاء
+                        </span>
+                        <span id="med-history-visits-count" style="background: rgba(2,132,199,0.1); color: #0284c7; padding: 0.35rem 0.85rem; border-radius: 20px; font-size: 0.85rem; font-weight: 700;">
+                            0 زيارة سابقة
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Form: Add New Consultation Record -->
+                <div id="add-record-form-container" style="background: var(--apple-card-bg, #f8fafc); border: 1px solid var(--apple-border); padding: 1.25rem; border-radius: 12px; margin-bottom: 1.5rem;">
+                    <h5 style="font-size: 1rem; font-weight: 800; color: var(--apple-text); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <i data-lucide="stethoscope" style="width: 18px; height: 18px; color: #0284c7;"></i>
+                        تدوين الفحص الطبي الحالي
+                    </h5>
+                    <form id="form-add-med-record" data-submit="submitMedicalRecord">
+                        <input type="hidden" id="med-rec-patient-phone">
+                        <input type="hidden" id="med-rec-patient-id">
+                        <input type="hidden" id="med-rec-appt-id">
+
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; margin-bottom: 1rem;">
+                            <div class="search-field">
+                                <label style="font-size: 0.8rem;">ضغط الدم (Blood Pressure)</label>
+                                <input type="text" id="med-rec-bp" class="search-input" placeholder="مثال: 12/8">
+                            </div>
+                            <div class="search-field">
+                                <label style="font-size: 0.8rem;">نسبة السكر (Blood Sugar)</label>
+                                <input type="text" id="med-rec-sugar" class="search-input" placeholder="مثال: 1.10 g/L">
+                            </div>
+                            <div class="search-field">
+                                <label style="font-size: 0.8rem;">الوزن (Weight kg)</label>
+                                <input type="number" step="0.1" id="med-rec-weight" class="search-input" placeholder="75">
+                            </div>
+                        </div>
+
+                        <div class="search-field" style="margin-bottom: 1rem;">
+                            <label style="font-size: 0.85rem;">التشخيص الطبي الحالي (Diagnosis) *</label>
+                            <input type="text" id="med-rec-diagnosis" class="search-input" placeholder="مثال: التهاب اللوزتين الحاد / زكام مؤقت" required>
+                        </div>
+
+                        <div class="search-field" style="margin-bottom: 1rem;">
+                            <label style="font-size: 0.85rem;">الأعراض والملاحظات السريرية (Symptoms & Signs)</label>
+                            <textarea id="med-rec-symptoms" class="search-input" rows="2" placeholder="حرارة 38.5، آلام بالحلق..."></textarea>
+                        </div>
+
+                        <div class="search-field" style="margin-bottom: 1.25rem;">
+                            <label style="font-size: 0.85rem;">ملاحظات خاصة وسرية بالطبيب (Doctor Confidential Notes)</label>
+                            <input type="text" id="med-rec-notes" class="search-input" placeholder="ملاحظات لا تظهر بالوصفة...">
+                        </div>
+
+                        <button type="submit" class="btn-primary" style="width: 100%;">
+                            <i data-lucide="save" style="width: 16px; height: 16px;"></i>
+                            حفظ الفيشة في السجل الطبي للمريض
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Medical History Timeline list -->
+                <div>
+                    <h5 style="font-size: 1rem; font-weight: 800; color: var(--apple-text); margin-bottom: 0.85rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <i data-lucide="history" style="width: 18px; height: 18px; color: var(--primary-emerald);"></i>
+                        سجل الفحوصات والزيارات الطبية السابقة
+                    </h5>
+                    <div id="patient-records-timeline" style="display: flex; flex-direction: column; gap: 1rem; max-height: 350px; overflow-y: auto; padding-left: 0.5rem;">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- MODAL 9: Admin Analytics & Clinic Approval Modal -->
+    
+<div id="admin-analytics-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 860px;">
+            <div class="modal-header">
+                <h3 style="display: flex; align-items: center; gap: 0.5rem;">
+                    <i data-lucide="shield-check" style="width: 22px; height: 22px; color: #0284c7;"></i>
+                    لوحة تحكم المشرف واعتماد العيادات — ولاية سطيف
+                </h3>
+                <button class="btn-close" data-ui="closeAdminAnalyticsModal">&times;</button>
+            </div>
+            <div class="modal-body" style="display: flex; flex-direction: column; gap: 1.25rem;">
+                
+                <!-- KPIs Grid -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem;">
+                    <div style="background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2); padding: 1rem; border-radius: 12px; text-align: center;">
+                        <span style="font-size: 0.8rem; color: var(--apple-subtext);">العيادات المفعّلة</span>
+                        <h4 id="admin-kpi-active-clinics" style="font-size: 1.4rem; font-weight: 800; color: #10b981; margin-top: 0.2rem;">0</h4>
+                    </div>
+                    <div style="background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2); padding: 1rem; border-radius: 12px; text-align: center;">
+                        <span style="font-size: 0.8rem; color: var(--apple-subtext);">بانتظار الاعتماد</span>
+                        <h4 id="admin-kpi-pending-clinics" style="font-size: 1.4rem; font-weight: 800; color: #f59e0b; margin-top: 0.2rem;">0</h4>
+                    </div>
+                    <div style="background: rgba(2,132,199,0.08); border: 1px solid rgba(2,132,199,0.2); padding: 1rem; border-radius: 12px; text-align: center;">
+                        <span style="font-size: 0.8rem; color: var(--apple-subtext);">إجمالي المرضى</span>
+                        <h4 id="admin-kpi-total-patients" style="font-size: 1.4rem; font-weight: 800; color: #0284c7; margin-top: 0.2rem;">0</h4>
+                    </div>
+                    <div style="background: rgba(124,58,237,0.08); border: 1px solid rgba(124,58,237,0.2); padding: 1rem; border-radius: 12px; text-align: center;">
+                        <span style="font-size: 0.8rem; color: var(--apple-subtext);">إجمالي الحجوزات</span>
+                        <h4 id="admin-kpi-total-bookings" style="font-size: 1.4rem; font-weight: 800; color: #7c3aed; margin-top: 0.2rem;">0</h4>
+                    </div>
+                    <div style="background: rgba(219,39,119,0.08); border: 1px solid rgba(219,39,119,0.2); padding: 1rem; border-radius: 12px; text-align: center;">
+                        <span style="font-size: 0.8rem; color: var(--apple-subtext);">الدخل الشهري المتوقع</span>
+                        <h4 id="admin-kpi-mrr" style="font-size: 1.1rem; font-weight: 800; color: #db2777; margin-top: 0.2rem;">0 دج</h4>
+                    </div>
+                </div>
+
+                <!-- Section: Pending Clinics Approval -->
+                <div style="background: var(--apple-card-bg, #ffffff); border: 1px solid var(--apple-border); border-radius: 12px; padding: 1.25rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+                        <h4 style="font-size: 1rem; font-weight: 800; color: var(--apple-text); display: flex; align-items: center; gap: 0.5rem;">
+                            <i data-lucide="clock" style="width: 18px; height: 18px; color: #f59e0b;"></i>
+                            طلبات اعتماد العيادات المسجّلة حديثاً
+                        </h4>
+                        <button class="btn-secondary" style="padding: 0.35rem 0.85rem; font-size: 0.8rem;" data-ui="refreshAdminAnalytics">
+                            <i data-lucide="refresh-cw" style="width: 14px; height: 14px;"></i>
+                            تحديث البيانات
+                        </button>
+                    </div>
+                    <div id="admin-pending-clinics-list" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                        <!-- Dynamically populated -->
+                    </div>
+                </div>
+
+                <!-- Section: Communes & Specialties Analytics Grid -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
+                    <div style="background: var(--apple-card-bg, #ffffff); border: 1px solid var(--apple-border); border-radius: 12px; padding: 1.25rem;">
+                        <h4 style="font-size: 0.95rem; font-weight: 800; color: var(--apple-text); margin-bottom: 0.85rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <i data-lucide="map-pin" style="width: 18px; height: 18px; color: #10b981;"></i>
+                            توزيع النشاط حسب بلديات سطيف
+                        </h4>
+                        <div id="admin-communes-list" style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 220px; overflow-y: auto;">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                    <div style="background: var(--apple-card-bg, #ffffff); border: 1px solid var(--apple-border); border-radius: 12px; padding: 1.25rem;">
+                        <h4 style="font-size: 0.95rem; font-weight: 800; color: var(--apple-text); margin-bottom: 0.85rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <i data-lucide="activity" style="width: 18px; height: 18px; color: #7c3aed;"></i>
+                            التخصصات الأكثر طلباً
+                        </h4>
+                        <div id="admin-specialties-list" style="display: flex; flex-direction: column; gap: 0.5rem; max-height: 220px; overflow-y: auto;">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+
+
+<div id="checkout-modal" class="modal-overlay">
+        <div class="modal-content" style="max-width: 540px;">
+            <div class="modal-header" style="background: linear-gradient(135deg, var(--primary-emerald), #0071e3); color: white;">
+                <h3 style="color: white; display: flex; align-items: center; gap: 0.5rem;">
+                    <i data-lucide="credit-card" style="width: 20px; height: 20px;"></i>
+                    اشتراك العيادة والدفع الإلكتروني
+                </h3>
+                <button class="btn-close" style="color: white; background: rgba(255,255,255,0.2);" data-ui="closeCheckoutModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <!-- Selected Plan Summary Badge -->
+                <div style="background: #f0fdf4; border: 1px solid #bbf7d0; padding: 1.1rem; border-radius: 14px; margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong id="checkout-plan-name" style="font-size: 1.1rem; color: var(--primary-emerald-dark);">الباقة الكاملة</strong>
+                        <div id="checkout-cycle-badge" style="font-size: 0.82rem; color: #15803d; font-weight: 600; margin-top: 2px;">اشتراك شهري</div>
+                    </div>
+                    <div style="text-align: left;">
+                        <strong id="checkout-amount" style="font-size: 1.35rem; color: var(--primary-emerald-dark); font-weight: 900;">9,900 دج</strong>
+                    </div>
+                </div>
+
+                <!-- Payment Methods Choice in Algeria -->
+                <div style="margin-bottom: 1.25rem;">
+                    <label style="font-size: 0.88rem; font-weight: 700; color: var(--apple-text); display: block; margin-bottom: 0.5rem;">
+                        اختر وسيلة الدفع المناسبة لعيادتك:
+                    </label>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                        <div style="border: 2px solid var(--primary-emerald); background: #f0fdf4; border-radius: 12px; padding: 0.85rem; text-align: center; cursor: pointer;">
+                            <div style="font-weight: 800; font-size: 0.9rem; color: var(--primary-emerald-dark);">💳 البطاقة الذهبية / CIB</div>
+                            <div style="font-size: 0.75rem; color: var(--apple-subtext); margin-top: 2px;">دفع إلكتروني آمن عبر Chargily</div>
+                        </div>
+                        <div style="border: 1px solid var(--apple-border); background: #f8fafc; border-radius: 12px; padding: 0.85rem; text-align: center; cursor: pointer;">
+                            <div style="font-weight: 800; font-size: 0.9rem; color: var(--apple-text);">🏦 تحويل بريدي CCP</div>
+                            <div style="font-size: 0.75rem; color: var(--apple-subtext); margin-top: 2px;">إرفاق وصل Bordereau CCP</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payment Provider PCI Security Note -->
+                <div style="background: #f8fafc; border: 1px solid var(--apple-border); border-radius: 14px; padding: 1rem; margin-bottom: 1.25rem; text-align: center;">
+                    <i data-lucide="shield-check" style="width: 32px; height: 32px; color: var(--primary-emerald); margin-bottom: 0.4rem;"></i>
+                    <h4 style="font-weight: 800; color: var(--apple-text); margin-bottom: 0.3rem; font-size: 0.95rem;">
+                        تأمين الدفع ومعايير PCI DSS العالمية
+                    </h4>
+                    <p style="font-size: 0.84rem; color: var(--apple-subtext); line-height: 1.6;">
+                        عند النقر على تأكيد، يتم توجيهك إلى صفحة الدفع المشفرة التابعة لـ Chargily أو البريد الجزائري مباشرة. لا يتم تخزين أي معلومات بنكية في خوادمنا.
+                    </p>
+                </div>
+
+                <form id="form-checkout-submit" data-submit="submitSubscriptionOrder">
+                    <button type="submit" class="btn-primary" style="width: 100%; font-size: 1.05rem; padding: 0.85rem; background: linear-gradient(135deg, var(--primary-emerald), #0071e3);">
+                        <i data-lucide="check-circle-2" style="width: 18px; height: 18px;"></i>
+                        تأكيد طلب الاشتراك وتفعيل العيادة
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal 4: Registration and Authentication (تسجيل الدخول وإدارة الحسابات) -->
+    
+    <script src="js/data.js?v=1791039175155"></script>
+    <script src="js/api.js?v=1791039175155"></script>
+    <script src="js/core.js?v=20261008_m1"></script>
+    <script src="js/ui.js?v=20261008_m1"></script>
+    <script src="js/queue.js?v=20261008_m1"></script>
+    <script src="js/dashboard.js?v=20261008_m1"></script>
+    <script src="js/billing.js?v=20261008_m1"></script>
+    <script src="js/auth.js?v=20261008_m1"></script>
+    <script src="js/admin.js?v=20261008_m1"></script>
+    <script src="js/init-doctor.js?v=20261008_m1"></script>
+
+    <script>
+        lucide.createIcons();
+    </script>
+    <script>
+      (function () {
+        function marcaud() {
+          var bar = document.getElementById('shifa-error-bar');
+          if (!bar) {
+            bar = document.createElement('div');
+            bar.id = 'shifa-error-bar';
+            bar.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;background:#dc2626;color:#fff;padding:8px 16px;font-size:13px;display:none;direction:rtl;text-align:center;';
+            document.body.prepend(bar);
+          }
+          return bar;
+        }
+        window.addEventListener('error', function (e) {
+          var bar = marcaud();
+          bar.style.display = 'block';
+          bar.textContent = '⚠ خطأ: ' + (e.message || 'غير معروف');
+        });
+      })();
+    </script>
+</body>
+</html>
