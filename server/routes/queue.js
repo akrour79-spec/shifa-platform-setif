@@ -439,3 +439,6 @@ router.delete('/:appointmentId', authenticate, requireClinicRole, asyncHandler(a
 }));
 
 module.exports = router;
+// للاختبارات: نكشف دوال التقنيع دون تغيير شكل التصدير
+module.exports.maskNameForScreen = maskNameForScreen;
+module.exports.shapeScreenRow = shapeScreenRow;

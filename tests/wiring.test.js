@@ -56,7 +56,13 @@ function codeFiles() {
 }
 
 const HTML = read('index.html');
-const APP = read('js/app.js');
+/** وحدات الواجهة (مقسّمة من app.js) — تُقرأ مجمّعةً لفحوص التماسك */
+const JS_MODULES = [
+  'js/core.js', 'js/ui.js', 'js/doctors.js', 'js/booking.js', 'js/queue.js',
+  'js/dashboard.js', 'js/billing.js', 'js/auth.js', 'js/admin.js',
+  'js/portal.js', 'js/init.js',
+];
+const APP = JS_MODULES.map(read).join('\n');
 
 /** المعرّفات المعلَنة في index.html */
 const HTML_IDS = new Set(
@@ -182,7 +188,7 @@ test('لا دالة معرَّفة مرتين في الملف نفسه', () => {
   // النسخة الثانية كانت هي التي تعمل، فكل رسائل الخطأ والتأكيد كانت
   // تظهر بلا تمييز ولا محاذاة. لم يلتقطها أي فحص ولا المتصفح: زر يعمل،
   // رسالة تظهر. لكن الرسالة الخاطئة تصل للمستخدم عند فشل حجز.
-  const targets = ['js/app.js', 'js/api.js', 'server/routes/auth.js', 'server/routes/doctors.js'];
+  const targets = [...JS_MODULES, 'js/api.js', 'server/routes/auth.js', 'server/routes/doctors.js'];
   const duplicates = [];
 
   for (const rel of targets) {
