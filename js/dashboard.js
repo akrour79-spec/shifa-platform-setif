@@ -310,3 +310,37 @@ function print() { window.print(); }
 
 
 
+/**
+ * مؤشر حالة الاتصال في لوحة الطبيب — يفحص /api/health دورياً.
+ * أخضر = متصل، أحمر = منقطع. يُحدَّث كل 60 ثانية وعند عودة الاتصال.
+ */
+let connStatusTimer = null;
+
+async function renderConnectionStatus() {
+    const el = document.getElementById('doctor-conn-status');
+    if (!el) return;
+    const dot = el.querySelector('.status-pulse-dot');
+    const label = el.querySelector('span:last-child');
+    try {
+        const res = await fetch('/api/health', { cache: 'no-store' });
+        const ok = res.ok && (await res.json()).ok !== false;
+        if (dot) dot.style.background = ok ? '#10b981' : '#ef4444';
+        if (label) {
+            label.textContent = ok ? 'متصل بالخادم' : 'الخادم لا يستجيب';
+            el.style.color = ok ? '#10b981' : '#ef4444';
+        }
+    } catch {
+        if (dot) dot.style.background = '#ef4444';
+        if (label) {
+            label.textContent = 'غير متصل — تحقق من الإنترنت';
+            el.style.color = '#ef4444';
+        }
+    }
+}
+
+function startConnectionStatusPolling() {
+    if (connStatusTimer) clearInterval(connStatusTimer);
+    renderConnectionStatus();
+    connStatusTimer = setInterval(renderConnectionStatus, 60000);
+    window.addEventListener('online', renderConnectionStatus);
+}
