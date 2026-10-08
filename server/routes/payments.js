@@ -9,7 +9,7 @@ const express = require('express');
 const db = require('../db');
 const { optionalAuth, authenticate, asyncHandler } = require('../middleware/auth');
 const { AppError } = require('../middleware/errors');
-const { createCheckout, verifyWebhookSignature, processWebhookEvent, PLAN_PRICES } = require('../lib/chargily');
+const { createCheckout, getCheckoutStatus, verifyWebhookSignature, processWebhookEvent, PLAN_PRICES } = require('../lib/chargily');
 
 const router = express.Router();
 
@@ -51,13 +51,23 @@ router.post('/checkout', optionalAuth, asyncHandler(async (req, res) => {
 
 /**
  * POST /api/payments/webhook — استقبال إشعار الخادم المباشر من Chargily
+ *
+ * التوقيع إجباري: في الإنتاج يُرفض أي إشعار بلا توقيع صالح (fail-closed).
+ * في التطوير يُسمح بلا توقيع لتسهيل الاختبار المحلي فقط.
  */
 router.post('/webhook', express.raw({ type: 'application/json' }), asyncHandler(async (req, res) => {
   const signature = req.headers['chargily-signature'];
   const rawBody = typeof req.body === 'string' ? req.body : JSON.stringify(req.body);
 
-  // التحقق اختياري في البيئة المحلية، وإجباري عند وجود التوقيع
-  if (signature && !verifyWebhookSignature(signature, rawBody)) {
+  const isProd = process.env.NODE_ENV === 'production';
+  const hasSecret = Boolean(process.env.CHARGILY_WEBHOOK_SECRET || process.env.CHARGILY_SECRET_KEY);
+
+  if (!signature || !hasSecret) {
+    if (isProd) {
+      throw new AppError(401, 'missing_signature', 'توقيع Chargily مفقود — الإشعارات غير الموقّعة مرفوضة في الإنتاج');
+    }
+    // بيئة التطوير: السماح بلا توقيع لاختبار الـ webhook محلياً فقط
+  } else if (!verifyWebhookSignature(signature, rawBody)) {
     throw new AppError(401, 'invalid_signature', 'توقيع Chargily غير صالح');
   }
 
@@ -68,13 +78,32 @@ router.post('/webhook', express.raw({ type: 'application/json' }), asyncHandler(
 }));
 
 /**
- * POST /api/payments/confirm-demo — تأكيد نجاح الدفع التجريبي (Demo Payment Success)
+ * POST /api/payments/confirm-demo — تأكيد نجاح الدفع بعد العودة من Chargily
+ *
+ * كانت هذه النقطة تقبل أي checkoutId من المتصفح وتعلّمه "مدفوعاً" بلا تحقق —
+ * أي شخص كان يقدر يبني رابط ?payment=success&checkout_id=... ويأخذ اشتراكاً مجانياً.
+ *
+ * الإصلاح: في الإنتاج لا نثق بإشعار المتصفح أبداً — الخادم يستعلم عن حالة
+ * التخليص مباشرةً من Chargily (مصدر الحقيقة الوحيد)، ولا يعلّم الدفع إلا إذا
+ * أكّدت Chargily أن حالته 'paid'. إذا تعذّر التحقق أو المفتاح غائب → رفض
+ * (fail-closed). في التطوير يبقى السلوك التجريبي كما كان لتسهيل الاختبار.
  */
 router.post('/confirm-demo', asyncHandler(async (req, res) => {
   const { checkoutId } = req.body || {};
 
   if (!checkoutId) {
     throw AppError.badRequest('معرّف التخليص مطلوب (checkoutId)');
+  }
+
+  if (process.env.NODE_ENV === 'production') {
+    const { verified, status } = await getCheckoutStatus(checkoutId);
+
+    if (!verified) {
+      throw new AppError(503, 'verify_unavailable', 'تعذّر التحقق من حالة الدفع مع Chargily — لم يتم تأكيد الدفع');
+    }
+    if (status !== 'paid') {
+      throw new AppError(402, 'payment_not_paid', 'الدفع غير مؤكد لدى Chargily — لم يتم تفعيل الاشتراك');
+    }
   }
 
   const updated = await db.queryOne(

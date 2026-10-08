@@ -64,6 +64,30 @@ const shapeRow = (row) => {
   };
 };
 
+// ---------------------------------------------------------------------------
+// إسقاط الشاشة العامة: الشاشة نقطة عمومية بلا دخول (للتلفزيون داخل العيادة)،
+// فلا يجوز أن تسرّب بيانات المرضى. تُرجع فقط ما يحتاجه التلفزيون فعلاً:
+// رقم الدور + الاسم الأول (للعرض والنطق الصوتي) + الحالة.
+// رقم الهاتف الكامل والاسم الكامل لا يظهران أبداً هنا — لوحة الطبيب
+// (المسارات المحمية) هي الوحيدة التي تراهما.
+// ---------------------------------------------------------------------------
+const maskNameForScreen = (fullName) => {
+  const first = String(fullName || '').trim().split(/\s+/)[0];
+  return first || 'مريض';
+};
+
+const shapeScreenRow = (shaped) => ({
+  id: shaped.id,
+  queue_number: shaped.queue_number,
+  patient_name: maskNameForScreen(shaped.patient_name),
+  appt_date: shaped.appt_date,
+  appt_time: shaped.appt_time,
+  status: shaped.status,
+  status_ar: shaped.status_ar,
+  status_tone: shaped.status_tone,
+  doctor_name: shaped.doctor_name,
+});
+
 /** دالة مشتركة: تقرأ تاريخ اليوم (أو تاريخاً محدداً) وتتحقق منه */
 function readDate(req) {
   const raw = req.query.date;
@@ -81,7 +105,8 @@ function readDate(req) {
 
 // ---------------------------------------------------------------------------
 // GET /api/queue/screen?date=... — شاشة العرض (تعمل بدون تسجيل دخول)
-// تُرجع فقط ما يُعرض على التلفزيون: رقم الدور، الاسم، الحالة، المتوسط
+// تُرجع فقط ما يُعرض على التلفزيون: رقم الدور، الاسم الأول (مقنّع)، الحالة.
+// لا تُرجع أرقام الهواتف ولا الأسماء الكاملة أبداً — نقطة عمومية بلا دخول.
 // ---------------------------------------------------------------------------
 const queueScreenCache = new Map();
 const queueScreenPending = new Map();
@@ -128,7 +153,8 @@ router.get('/screen', asyncHandler(async (req, res) => {
         [clinicId, date]
       );
 
-      const appointments = rows.map(shapeRow);
+      // إسقاط مقنّع للشاشة العامة: الاسم الأول فقط، بلا أرقام هواتف
+      const appointments = rows.map(shapeRow).map(shapeScreenRow);
 
       const total = await db.queryOne(
         `SELECT COUNT(*)::int AS total,

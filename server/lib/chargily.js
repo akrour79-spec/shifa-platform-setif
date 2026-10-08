@@ -99,6 +99,28 @@ async function createCheckout(options) {
 }
 
 /**
+ * الاستعلام عن حالة تخليص مباشرةً من Chargily — مصدر الحقيقة الوحيد
+ * قبل اعتبار أي دفع ناجحاً. يُستخدم في الإنتاج حيث لا نثق بإشعار المتصفح.
+ * تُرجع { verified, status } — verified=false تعني تعذّر التحقق (لا تُقبل).
+ */
+async function getCheckoutStatus(checkoutId) {
+  const apiKey = process.env.CHARGILY_SECRET_KEY;
+  if (!apiKey || !checkoutId) return { verified: false, status: null };
+
+  try {
+    const response = await fetch(
+      `${CHARGILY_API_BASE}/checkouts/${encodeURIComponent(checkoutId)}`,
+      { headers: { 'Authorization': `Bearer ${apiKey}` } }
+    );
+    if (!response.ok) return { verified: false, status: null };
+    const data = await response.json();
+    return { verified: true, status: data.status || null };
+  } catch {
+    return { verified: false, status: null };
+  }
+}
+
+/**
  * التحقق من توقيع الـ Webhook القادم من Chargily
  */
 function verifyWebhookSignature(signature, rawBody) {
@@ -138,6 +160,7 @@ async function processWebhookEvent(payload) {
 module.exports = {
   PLAN_PRICES,
   createCheckout,
+  getCheckoutStatus,
   verifyWebhookSignature,
   processWebhookEvent,
 };
