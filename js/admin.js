@@ -48,6 +48,15 @@ async function loadAdminAnalytics() {
         const completedTagEl = document.getElementById('kpi-completed-tag');
         if (completedTagEl) completedTagEl.textContent = `${kpis.completedAppointments ?? 0} موعد مكتمل بنجاح`;
 
+        // نسبة الغياب — تُعرض في عنصر kpi-noshow-tag
+        const noShowTagEl = document.getElementById('kpi-noshow-tag');
+        if (noShowTagEl) {
+            const rate = kpis.noShowRate ?? 0;
+            const missed = (kpis.cancelledAppointments ?? 0) + (kpis.noShowAppointments ?? 0);
+            noShowTagEl.textContent = `${rate}% غياب (${missed} موعد)`;
+            noShowTagEl.style.color = rate > 20 ? '#ef4444' : rate > 10 ? '#f59e0b' : '#10b981';
+        }
+
         const elPatients = document.getElementById('admin-kpi-total-patients') || document.getElementById('kpi-total-patients');
         if (elPatients) elPatients.textContent = kpis.totalPatients ?? 0;
 
