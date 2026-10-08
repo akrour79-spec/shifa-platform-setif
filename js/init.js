@@ -92,6 +92,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     initMap();
     renderQueue();
     renderDoctorDashboard();
+    startConnectionStatusPolling();
     renderSubscriptions();
     renderPricingCards();
 
