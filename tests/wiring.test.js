@@ -74,14 +74,16 @@ const USED_IDS = new Set(
   [...APP.matchAll(/getElementById\('([^']+)'\)/g)].map((m) => m[1])
 );
 
-/** الدوال المسجَّلة في القائمة البيضاء للتفويض */
+/** الدوال المسجَّلة في القائمة البيضاء للتفويض (من كل ملفات التهيئة) */
 const REGISTERED_ACTIONS = new Set(
-  (
-    (/const UI_ACTIONS = Object\.freeze\(\{([\s\S]*?)\}\);/.exec(APP) || [, ''])[1]
-      .split(',')
-      .map((s) => s.trim())
-      .filter(Boolean)
-  )
+  [...APP.matchAll(/const UI_ACTIONS = Object\.freeze\(\{([\s\S]*?)\}\);/g)]
+    .flatMap((m) => m[1].split('\n'))
+    .map((line) => {
+      // shorthand: `name,` أو `name,` — أو `key: ...` أو `key: (...) => ...`
+      const mm = line.match(/^\s*([A-Za-z_$][\w$]*)\s*(?::|,|$)/);
+      return mm ? mm[1] : null;
+    })
+    .filter(Boolean)
 );
 
 // ---------------------------------------------------------------------------
@@ -500,5 +502,42 @@ test('الوثائق لا تَعِد بميزات غير موجودة', () => {
         }
       }
     });
+  }
+});
+test('نظام التقييمات مكتمل: migration + API + واجهة', () => {
+  // 1) migration موجود
+  const mig = read('server/db/migrations/008_reviews.sql');
+  assert.ok(/CREATE TABLE.*reviews/.test(mig), 'لا جدول reviews في migration 008');
+  assert.ok(/refresh_doctor_rating/.test(mig), 'لا دالة تحديث التقييم');
+
+  // 2) API endpoints
+  const routes = read('server/routes/doctors.js');
+  assert.ok(/\/:id\/reviews/.test(routes), 'لا مسار GET /:id/reviews');
+  assert.ok(/router\.post\('\/:id\/reviews'/.test(routes), 'لا مسار POST /:id/reviews');
+
+  // 3) دوال الواجهة
+  const doctorsJs = read('js/doctors.js');
+  assert.ok(/function renderStars/.test(doctorsJs), 'لا دالة renderStars');
+  assert.ok(/function openReviewModal/.test(doctorsJs), 'لا دالة openReviewModal');
+  assert.ok(/function submitReview/.test(doctorsJs), 'لا دالة submitReview');
+
+  // 4) النافذة في patient.html
+  const patientHtml = read('patient.html');
+  assert.ok(/id="review-modal"/.test(patientHtml), 'لا نافذة review-modal');
+  assert.ok(/data-submit="submitReview"/.test(patientHtml), 'لا نموذج submitReview');
+});
+
+test('نظام i18n: قاموس عربي/فرنسي وزر التبديل', () => {
+  const i18n = read('js/i18n.js');
+  assert.ok(/I18N_STRINGS/.test(i18n), 'لا قاموس I18N_STRINGS');
+  assert.ok(/\bar:\s*\{/.test(i18n), 'لا قاموس عربي');
+  assert.ok(/\bfr:\s*\{/.test(i18n), 'لا قاموس فرنسي');
+  assert.ok(/function setLang/.test(i18n), 'لا دالة setLang');
+  assert.ok(/function toggleLang/.test(i18n), 'لا دالة toggleLang');
+
+  for (const page of ['patient.html', 'doctor.html']) {
+    const html = read(page);
+    assert.ok(/js\/i18n\.js/.test(html), `${page}: لا تحميل i18n.js`);
+    assert.ok(/data-ui="toggleLang"/.test(html), `${page}: لا زر تبديل اللغة`);
   }
 });
