@@ -235,39 +235,6 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-let deferredPWAPrompt = null;
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPWAPrompt = e;
-  const banner = document.getElementById('pwa-install-banner');
-  if (banner && !sessionStorage.getItem('pwa_dismissed')) {
-    banner.style.display = 'block';
-  }
-});
-
-function installPWA() {
-  if (!deferredPWAPrompt) {
-    if (typeof showToast === 'function') {
-      showToast('التطبيق مثبت بالفعل أو أن متصفحك لا يدعم التثبيت المباشر', 'info');
-    }
-    return;
-  }
-  deferredPWAPrompt.prompt();
-  deferredPWAPrompt.userChoice.then((choiceResult) => {
-    if (choiceResult.outcome === 'accepted') {
-      console.log('[PWA] User accepted install prompt');
-    }
-    deferredPWAPrompt = null;
-    dismissPWABanner();
-  });
-}
-
-function dismissPWABanner() {
-  const banner = document.getElementById('pwa-install-banner');
-  if (banner) banner.style.display = 'none';
-  sessionStorage.setItem('pwa_dismissed', 'true');
-}
-
 
 // ---------------------------------------------------------------------------
 // عزل وتهيئة الواجهة بحسب نوع المستخدم (تطبيق المريض vs تطبيق الطبيب)
@@ -307,6 +274,7 @@ function applyRoleBasedAppExperience(user) {
 }
 
 function print() { window.print(); }
+
 
 
 
