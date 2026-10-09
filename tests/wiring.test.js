@@ -55,12 +55,12 @@ function codeFiles() {
   return out;
 }
 
-const HTML = ['index.html', 'patient.html', 'doctor.html'].map(read).join('\n');
+const HTML = ['index.html', 'patient.html', 'doctor.html', 'admin.html'].map(read).join('\n');
 /** وحدات الواجهة (مقسّمة من app.js) — تُقرأ مجمّعةً لفحوص التماسك */
 const JS_MODULES = [
   'js/core.js', 'js/ui.js', 'js/doctors.js', 'js/booking.js', 'js/queue.js',
   'js/dashboard.js', 'js/billing.js', 'js/auth.js', 'js/admin.js',
-  'js/portal.js', 'js/init.js', 'js/init-patient.js', 'js/init-doctor.js',
+  'js/portal.js', 'js/init.js', 'js/init-patient.js', 'js/init-doctor.js', 'js/init-admin.js',
 ];
 const APP = JS_MODULES.map(read).join('\n');
 
