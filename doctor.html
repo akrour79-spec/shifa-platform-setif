@@ -1202,6 +1202,7 @@
     <script src="js/billing.js?v=20261008_m1"></script>
     <script src="js/auth.js?v=20261008_m1"></script>
     <script src="js/admin.js?v=20261008_m1"></script>
+    <script src="js/portal.js?v=20261008_m1"></script>
     <script src="js/init-doctor.js?v=20261008_m1"></script>
 
     <script>
@@ -1226,5 +1227,36 @@
         });
       })();
     </script>
+
+    <!-- شاشة TV لقاعة الانتظار -->
+    <div id="clinic-tv-overlay" class="clinic-tv-overlay">
+        <div class="tv-header-bar">
+            <div class="tv-logo-brand">
+                <div class="auth-logo-badge" style="background: #10b981;">ش</div>
+                <div>
+                    <div>منصة شِـفَـاء سطيف</div>
+                    <div style="font-size: 0.9rem; font-weight: 500; color: #94a3b8;" id="tv-clinic-name">عيادة د. كريم بوزيد - سطيف المركز</div>
+                </div>
+            </div>
+            <button class="btn-queue-action" data-ui="toggleClinicTVMode" style="background: rgba(255,255,255,0.1); color: white; border: none; font-size: 1.1rem; padding: 0.6rem 1.2rem;">
+                ✕ إغلاق شاشة TV
+            </button>
+        </div>
+
+        <div class="tv-big-display">
+            <div style="font-size: 1.5rem; color: #94a3b8; font-weight: 700; margin-bottom: 0.5rem;">الرقم الحالي قيد المعاينة في المكتب</div>
+            <div class="tv-queue-number" id="tv-number-display">#02</div>
+            <div class="tv-patient-name" id="tv-patient-name-display">المريض: محمد عبد السلام</div>
+            <div class="tv-doctor-subtitle" id="tv-doctor-subtitle">يرجى التوجه إلى مكتب المعاينة رقم 1</div>
+        </div>
+
+        <div class="tv-ticker-bar">
+            <i data-lucide="bell" style="width: 24px; height: 24px;"></i>
+            <span>تنبيه للمرضى: يرجى تحضير بطاقة الشفاء والوثائق الطبية عند الاستدعاء. نرجو التزام الهدوء بقاعة الانتظار.</span>
+        </div>
+    </div>
+
+    <!-- Notification Toasts Container -->
+    <div id="toast-container"></div>
 </body>
 </html>
