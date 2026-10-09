@@ -2,13 +2,20 @@
   <defs>
     <linearGradient id="sg2" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#10b981"/>
-      <stop offset="60%" stop-color="#059669"/>
-      <stop offset="100%" stop-color="#0284c7"/>
+      <stop offset="55%" stop-color="#059669"/>
+      <stop offset="100%" stop-color="#0e7490"/>
     </linearGradient>
+    <clipPath id="iconClip">
+      <rect width="200" height="200" rx="48"/>
+    </clipPath>
   </defs>
+  <!-- أيقونة التطبيق: هلال + نبض -->
   <rect width="200" height="200" rx="48" fill="url(#sg2)"/>
-  <g transform="translate(100,96)">
-    <path d="M -18 -52 h 36 v 34 h 34 v 36 h -34 v 34 h -36 v -34 h -34 v -36 h 34 z" fill="#ffffff"/>
-    <path d="M -46 18 l 14 -14 l 10 22 l 14 -32 l 10 24 l 8 -12 l 12 12" fill="none" stroke="#ffffff" stroke-width="7" stroke-linecap="round" stroke-linejoin="round" opacity="0.95"/>
+  <g clip-path="url(#iconClip)">
+    <circle cx="100" cy="100" r="56" fill="#ffffff"/>
+    <circle cx="120" cy="86" r="47" fill="url(#sg2)"/>
+    <path d="M 40 122 l 17 -17 l 12 26 l 16 -39 l 12 30 l 10 -15 l 15 15"
+          fill="none" stroke="#ffffff" stroke-width="9"
+          stroke-linecap="round" stroke-linejoin="round"/>
   </g>
 </svg>
