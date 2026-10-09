@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>الهوية البصرية — منصة شفاء سطيف</title>
+<script src="https://unpkg.com/lucide@latest"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --emerald:#059669; --emerald-l:#10b981; --emerald-d:#047857;
+  --sky:#0284c7; --sky-l:#38bdf8;
+  --ink:#0f172a; --mut:#64748b; --bg:#f8fafc; --card:#fff;
+  --amber:#f59e0b; --red:#ef4444;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Tajawal','Cairo',sans-serif;background:var(--bg);color:var(--ink);line-height:1.8}
+.hero{background:linear-gradient(135deg,#0b1220 0%,#0d2b22 60%,#0c2f4a 100%);color:#fff;padding:4rem 1.5rem 3.5rem;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle,rgba(16,185,129,.25),transparent 70%);top:-150px;right:-100px}
+.hero::after{content:'';position:absolute;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(56,189,248,.2),transparent 70%);bottom:-120px;left:-80px}
+.hero img{width:120px;height:120px;border-radius:32px;box-shadow:0 16px 48px rgba(0,0,0,.4);margin-bottom:1.5rem;position:relative;z-index:1}
+.hero h1{font-family:'Cairo';font-size:2.4rem;font-weight:900;position:relative;z-index:1}
+.hero p{color:#94a3b8;font-size:1.1rem;max-width:640px;margin:.75rem auto 0;position:relative;z-index:1}
+.wrap{max-width:1024px;margin:0 auto;padding:2.5rem 1.25rem}
+section{background:var(--card);border-radius:20px;padding:2rem;margin-bottom:1.75rem;box-shadow:0 4px 20px rgba(0,0,0,.05);border:1px solid #eef2f7}
+section h2{font-family:'Cairo';font-size:1.5rem;font-weight:800;margin-bottom:.35rem;display:flex;align-items:center;gap:.6rem}
+section h2 i{color:var(--emerald)}
+.sec-sub{color:var(--mut);margin-bottom:1.5rem;font-size:.98rem}
+.logo-row{display:flex;gap:1.5rem;flex-wrap:wrap;align-items:center;justify-content:center}
+.logo-card{background:#f8fafc;border:1px solid #e8eef5;border-radius:16px;padding:1.75rem;text-align:center;flex:1;min-width:240px}
+.logo-card.dark{background:#0f172a;border-color:#1e293b}
+.logo-card img{max-width:100%;height:auto}
+.logo-card .cap{margin-top:1rem;font-weight:700;font-size:.92rem}
+.logo-card .cap small{display:block;color:var(--mut);font-weight:500}
+.swatches{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem}
+.swatch{border-radius:14px;overflow:hidden;border:1px solid #e8eef5}
+.swatch .c{height:84px}
+.swatch .t{padding:.7rem .9rem;background:#fff}
+.swatch .t b{display:block;font-size:.92rem}
+.swatch .t code{font-size:.8rem;color:var(--mut);direction:ltr;display:block}
+.type-sample{border:1px solid #e8eef5;border-radius:14px;padding:1.5rem;margin-bottom:1rem}
+.type-sample .lbl{font-size:.8rem;color:var(--mut);margin-bottom:.5rem;font-weight:700}
+.rules{display:grid;gap:.9rem}
+.rule{display:flex;gap:.9rem;align-items:flex-start;background:#f8fafc;border-radius:12px;padding:1rem 1.2rem}
+.rule i{flex-shrink:0;margin-top:.25rem}
+.rule.ok i{color:var(--emerald)} .rule.no i{color:var(--red)}
+.dl{display:flex;gap:1rem;flex-wrap:wrap;margin-top:1.25rem}
+.btn{display:inline-flex;align-items:center;gap:.5rem;padding:.8rem 1.6rem;border-radius:12px;font-weight:700;text-decoration:none;font-family:'Tajawal'}
+.btn-p{background:linear-gradient(135deg,#10b981,#059669);color:#fff;box-shadow:0 8px 24px rgba(16,185,129,.35)}
+.btn-o{border:2px solid var(--emerald);color:var(--emerald)}
+footer{text-align:center;color:var(--mut);padding:2rem;font-size:.9rem}
+@media(max-width:600px){.hero h1{font-size:1.8rem}}
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <img src="logo-icon.svg" alt="شعار شفاء">
+  <h1>الهوية البصرية لمنصة شفاء</h1>
+  <p>الدليل الرسمي للشعار، الألوان، الخطوط، وقواعد الاستخدام — ولاية سطيف 2026</p>
+</div>
+
+<div class="wrap">
+
+<section>
+  <h2><i data-lucide="pen-tool"></i> الشعار</h2>
+  <p class="sec-sub">يجمع الشعار بين الصليب الطبي وخط نبض القلب — رمز الشفاء والحياة. النسخة الملونة للاستخدام العام، والأحادية للطباعة والخلفيات الداكنة.</p>
+  <div class="logo-row">
+    <div class="logo-card">
+      <img src="logo-primary.svg" alt="الشعار الأساسي">
+      <div class="cap">الشعار الأساسي<small>للاستخدام العام على الخلفيات الفاتحة</small></div>
+    </div>
+    <div class="logo-card dark">
+      <img src="logo-mono.svg" alt="الشعار الأحادي">
+      <div class="cap" style="color:#e2e8f0">النسخة الأحادية<small>للطباعة والخلفيات الداكنة</small></div>
+    </div>
+    <div class="logo-card">
+      <img src="logo-icon.svg" alt="الأيقونة" style="width:120px">
+      <div class="cap">الأيقونة<small>للتطبيق والفافيكون ووسائل التواصل</small></div>
+    </div>
+  </div>
+  <div class="dl">
+    <a class="btn btn-p" href="logo-primary.svg" download><i data-lucide="download"></i> تحميل الشعار الأساسي</a>
+    <a class="btn btn-o" href="logo-icon.svg" download><i data-lucide="download"></i> تحميل الأيقونة</a>
+    <a class="btn btn-o" href="logo-mono.svg" download><i data-lucide="download"></i> تحميل النسخة الأحادية</a>
+  </div>
+</section>
+
+<section>
+  <h2><i data-lucide="palette"></i> الألوان</h2>
+  <p class="sec-sub">الأخضر الزمردي = الصحة والثقة. الأزرق السماوي = الهدوء الطبي. مستمدة من هوية المنصة الحالية.</p>
+  <div class="swatches">
+    <div class="swatch"><div class="c" style="background:#059669"></div><div class="t"><b>زمردي أساسي</b><code>#059669</code></div></div>
+    <div class="swatch"><div class="c" style="background:#10b981"></div><div class="t"><b>زمردي فاتح</b><code>#10B981</code></div></div>
+    <div class="swatch"><div class="c" style="background:#047857"></div><div class="t"><b>زمردي داكن</b><code>#047857</code></div></div>
+    <div class="swatch"><div class="c" style="background:#0284c7"></div><div class="t"><b>أزرق طبي</b><code>#0284C7</code></div></div>
+    <div class="swatch"><div class="c" style="background:#38bdf8"></div><div class="t"><b>سماوي فاتح</b><code>#38BDF8</code></div></div>
+    <div class="swatch"><div class="c" style="background:#0f172a"></div><div class="t"><b>كحلي (نصوص)</b><code>#0F172A</code></div></div>
+    <div class="swatch"><div class="c" style="background:#f59e0b"></div><div class="t"><b>كهرماني (تنبيه)</b><code>#F59E0B</code></div></div>
+    <div class="swatch"><div class="c" style="background:#ef4444"></div><div class="t"><b>أحمر (خطر)</b><code>#EF4444</code></div></div>
+  </div>
+</section>
+
+<section>
+  <h2><i data-lucide="type"></i> الخطوط</h2>
+  <p class="sec-sub">خطوط عربية حديثة تدعم التشكيل بوضوح — مجانية من Google Fonts.</p>
+  <div class="type-sample">
+    <div class="lbl">العناوين — Cairo (أوزان 700-900)</div>
+    <div style="font-family:'Cairo';font-weight:900;font-size:2rem">احجز موعدك الطبي في سطيف</div>
+  </div>
+  <div class="type-sample">
+    <div class="lbl">النصوص — Tajawal (أوزان 400-700)</div>
+    <div style="font-family:'Tajawal';font-size:1.1rem">منصة شفاء تربط المرضى بأفضل الأطباء والعيادات في ولاية سطيف — حجز سريع، تذكير تلقائي، ومتابعة لحظية.</div>
+  </div>
+</section>
+
+<section>
+  <h2><i data-lucide="shield-check"></i> قواعد الاستخدام</h2>
+  <p class="sec-sub">للحفاظ على قوة العلامة في كل ظهور.</p>
+  <div class="rules">
+    <div class="rule ok"><i data-lucide="check-circle-2"></i><div><b>استخدم الشعار الملون</b> على الخلفيات الفاتحة والمحايدة.</div></div>
+    <div class="rule ok"><i data-lucide="check-circle-2"></i><div><b>استخدم النسخة الأحادية</b> على الخلفيات الداكنة أو في الطباعة أحادية اللون.</div></div>
+    <div class="rule ok"><i data-lucide="check-circle-2"></i><div><b>اترك مساحة أمان</b> حول الشعار تعادل ارتفاع الصليب على الأقل.</div></div>
+    <div class="rule no"><i data-lucide="x-circle"></i><div><b>لا تغيّر ألوان الشعار</b> ولا تضف ظلالاً أو تأثيرات ثلاثية الأبعاد.</div></div>
+    <div class="rule no"><i data-lucide="x-circle"></i><div><b>لا تمدّد الشعار أو تضغطه</b> — حافظ على النسب الأصلية دائماً.</div></div>
+    <div class="rule no"><i data-lucide="x-circle"></i><div><b>لا تضع الشعار على خلفيات مزدحمة</b> تُضعف وضوحه.</div></div>
+  </div>
+</section>
+
+</div>
+
+<footer>الهوية البصرية الرسمية — منصة شفاء سطيف © 2026</footer>
+<script>lucide.createIcons();</script>
+</body>
+</html>
