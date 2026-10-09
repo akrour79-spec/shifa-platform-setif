@@ -162,6 +162,12 @@
       return this.get(`/api/doctors/${encodeURIComponent(id)}/availability?${qs}`);
     },
     doctorDays(id)             { return this.get(`/api/doctors/${encodeURIComponent(id)}/days`); },
+    getReviews(id, limit = 10, offset = 0) {
+      return this.get(`/api/doctors/${encodeURIComponent(id)}/reviews?limit=${limit}&offset=${offset}`);
+    },
+    submitReview(id, rating, comment) {
+      return this.post(`/api/doctors/${encodeURIComponent(id)}/reviews`, { rating, comment });
+    },
 
     // ---------------------------------------------------------------------
     // المواعيد

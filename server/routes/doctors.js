@@ -338,4 +338,64 @@ router.put('/me', authenticate, requireClinicRole, asyncHandler(async (req, res)
   res.json({ message: 'تم تحديث بيانات العيادة', clinic: updated });
 }));
 
+// ---------------------------------------------------------------------------
+// GET /api/doctors/:id/reviews — قائمة تقييمات طبيب (عامة)
+// ---------------------------------------------------------------------------
+router.get('/:id/reviews', asyncHandler(async (req, res) => {
+  const parsed = doctorIdSchema.safeParse(req.params);
+  if (!parsed.success) throw new AppError(400, 'invalid_id', 'معرف الطبيب غير صالح');
+
+  const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 10, 1), 50);
+  const offset = Math.max(parseInt(req.query.offset, 10) || 0, 0);
+
+  const rows = await db.query(
+    `SELECT r.rating, r.comment, r.created_at,
+            COALESCE(u.full_name, 'مريض') AS patient_name
+       FROM public.reviews r
+       JOIN public.users u ON u.id = r.patient_id
+      WHERE r.doctor_id = $1
+      ORDER BY r.created_at DESC
+      LIMIT $2 OFFSET $3`,
+    [parsed.data.id, limit, offset]
+  );
+  const total = await db.queryOne(
+    'SELECT COUNT(*)::int AS c FROM public.reviews WHERE doctor_id = $1',
+    [parsed.data.id]
+  );
+  res.json({ reviews: rows, total: total.c });
+}));
+
+// ---------------------------------------------------------------------------
+// POST /api/doctors/:id/reviews — إضافة/تحديث تقييم (للمريض المسجل فقط)
+// ---------------------------------------------------------------------------
+router.post('/:id/reviews', authenticate, asyncHandler(async (req, res) => {
+  const parsed = doctorIdSchema.safeParse(req.params);
+  if (!parsed.success) throw new AppError(400, 'invalid_id', 'معرف الطبيب غير صالح');
+
+  const rating = parseInt(req.body && req.body.rating, 10);
+  if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
+    throw new AppError(400, 'invalid_rating', 'التقييم يجب أن يكون بين 1 و 5 نجوم');
+  }
+  const comment = typeof req.body.comment === 'string' ? req.body.comment.trim().slice(0, 1000) : null;
+
+  // الطبيب موجود؟
+  const doctor = await db.queryOne('SELECT id FROM public.doctors WHERE id = $1', [parsed.data.id]);
+  if (!doctor) throw new AppError(404, 'not_found', 'الطبيب غير موجود');
+
+  // المريض لا يقيّم نفسه إن كان طبيباً
+  const own = await db.queryOne('SELECT id FROM public.doctors WHERE id = $1 AND profile_id = $2', [parsed.data.id, req.user.id]);
+  if (own) throw new AppError(403, 'forbidden', 'لا يمكنك تقييم عيادتك');
+
+  await db.query(
+    `INSERT INTO public.reviews (doctor_id, patient_id, rating, comment)
+     VALUES ($1, $2, $3, $4)
+     ON CONFLICT (doctor_id, patient_id)
+     DO UPDATE SET rating = EXCLUDED.rating, comment = EXCLUDED.comment, created_at = now()`,
+    [parsed.data.id, req.user.id, rating, comment]
+  );
+  await db.query('SELECT refresh_doctor_rating($1)', [parsed.data.id]);
+
+  res.status(201).json({ message: 'شكراً! تم حفظ تقييمك' });
+}));
+
 module.exports = router;
