@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة شفاء — لوحة الإدارة | مالك المنصة</title>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- PWA Web App Manifest & Mobile Meta Tags -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#059669">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="شفاء سطيف">
+    <link rel="apple-touch-icon" href="/icons/icon-192.svg">
+    <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
+    <link rel="stylesheet" href="css/style.css?v=20261004_v12">
+</head>
+<body>
+<header class="navbar">
+    <div class="nav-container">
+        <a href="index.html" class="logo-wrap">
+            <div class="logo-badge">ش</div>
+            <div class="logo-text">
+                <h1>شِـفَـاء <small style="font-size: 0.85rem; font-weight: 500; color: #059669;">سطيف</small></h1>
+                <span>لوحة تحكم مالك المنصة 🛡️</span>
+            </div>
+        </a>
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <span class="role-badge admin" id="admin-role-badge" style="display: none;">مشرف</span>
+            <button class="btn-theme-toggle" data-ui="toggleTheme" title="الوضع الليلي">
+                <i data-lucide="moon" style="width: 18px; height: 18px;"></i>
+            </button>
+            <button class="btn-primary" data-ui="openAuthModal" id="admin-login-btn" style="padding: 0.5rem 1.25rem;">
+                <i data-lucide="log-in" style="width: 16px; height: 16px;"></i>
+                دخول المشرف
+            </button>
+            <button class="btn-outline" data-ui="logoutAdmin" id="admin-logout-btn" style="display: none; padding: 0.5rem 1.25rem;">
+                <i data-lucide="log-out" style="width: 16px; height: 16px;"></i>
+                خروج
+            </button>
+        </div>
+    </div>
+</header>
+
+<main class="main-container" style="max-width: 1200px; margin: 0 auto; padding: 2rem 1rem;">
+    <!-- رسالة لغير المسجلين -->
+    <div id="admin-gate" style="text-align: center; padding: 4rem 1rem;">
+        <div style="font-size: 3.5rem; margin-bottom: 1rem;">🛡️</div>
+        <h2 style="font-size: 1.5rem; font-weight: 800; margin-bottom: 0.5rem;">لوحة الإدارة محمية</h2>
+        <p style="color: var(--apple-subtext); margin-bottom: 1.5rem;">سجّل الدخول بحساب المشرف للوصول إلى إحصائيات المنصة واعتماد العيادات.</p>
+        <button class="btn-primary" data-ui="openAuthModal" style="padding: 0.75rem 2rem; font-size: 1rem;">
+            <i data-lucide="log-in" style="width: 18px; height: 18px;"></i>
+            تسجيل الدخول
+        </button>
+    </div>
+
+    <!-- محتوى الإدارة (يظهر بعد الدخول) -->
+    <div id="admin-content" style="display: none;">
+        <div class="section-header-analytics" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h2 style="font-size: 1.6rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem;">
+                    <i data-lucide="line-chart" style="width: 26px; height: 26px; color: var(--primary-emerald);"></i>
+                    تحليلات وإحصائيات قطاع الصحة بولاية سطيف
+                </h2>
+                <p style="font-size: 0.9rem; color: var(--apple-subtext); margin-top: 0.25rem;">
+                    مؤشرات حية لتوزيع الحجوزات حسب البلديات، التخصصات الأكثر طلباً، وساعات الذروة بالولاية
+                </p>
+            </div>
+            <button class="btn-outline" data-ui="refreshAdminAnalytics" style="display: flex; align-items: center; gap: 0.5rem; font-weight: 700;">
+                <i data-lucide="refresh-cw" style="width: 16px; height: 16px;"></i>
+                تحديث البيانات الحية
+            </button>
+        </div>
+
+        <!-- KPI Quick Cards Grid -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.25rem; margin-bottom: 2rem;">
+            <div class="analytics-kpi-card">
+                <div class="kpi-icon-wrapper" style="background: rgba(16, 185, 129, 0.1); color: #10b981;">
+                    <i data-lucide="building-2" style="width: 22px; height: 22px;"></i>
+                </div>
+                <div class="kpi-data">
+                    <span class="kpi-label">العيادات النشطة في سطيف</span>
+                    <h4 id="kpi-active-clinics" class="kpi-value">-</h4>
+                    <small id="kpi-pending-tag" class="kpi-subtext">0 عيادات بانتظار الاعتماد</small>
+                </div>
+            </div>
+
+            <div class="analytics-kpi-card">
+                <div class="kpi-icon-wrapper" style="background: rgba(2, 132, 199, 0.1); color: #0284c7;">
+                    <i data-lucide="calendar-check" style="width: 22px; height: 22px;"></i>
+                </div>
+                <div class="kpi-data">
+                    <span class="kpi-label">إجمالي المواعيد المحجوزة</span>
+                    <h4 id="kpi-total-appts" class="kpi-value">-</h4>
+                    <small id="kpi-completed-tag" class="kpi-subtext">- موعد مكتمل بنجاح</small>
+                    <small id="kpi-noshow-tag" class="kpi-subtext">- غياب</small>
+                </div>
+            </div>
+
+            <div class="analytics-kpi-card">
+                <div class="kpi-icon-wrapper" style="background: rgba(124, 58, 237, 0.1); color: #7c3aed;">
+                    <i data-lucide="users" style="width: 22px; height: 22px;"></i>
+                </div>
+                <div class="kpi-data">
+                    <span class="kpi-label">المرضى المسجلون بالولاية</span>
+                    <h4 id="kpi-total-patients" class="kpi-value">-</h4>
+                    <small class="kpi-subtext">حسابات موثقة برقم الجزائر</small>
+                </div>
+            </div>
+
+            <div class="analytics-kpi-card">
+                <div class="kpi-icon-wrapper" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">
+                    <i data-lucide="trending-up" style="width: 22px; height: 22px;"></i>
+                </div>
+                <div class="kpi-data">
+                    <span class="kpi-label">المداخيل الشهرية التقديرية (MRR)</span>
+                    <h4 id="kpi-mrr-value" class="kpi-value">-</h4>
+                    <small class="kpi-subtext">دج / شهرياً (اشتراكات العيادات)</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Clinics Approval -->
+        <div style="background: var(--apple-card-bg, white); border-radius: var(--radius-apple); border: 1px solid var(--apple-border); padding: 1.5rem; box-shadow: var(--shadow-apple-sm); margin-bottom: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+                <h3 style="font-size: 1.15rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem;">
+                    <i data-lucide="shield-check" style="width: 18px; height: 18px; color: #f59e0b;"></i>
+                    طلبات اعتماد العيادات المسجلة حديثاً
+                </h3>
+                <span id="pending-clinics-count-badge" style="background: rgba(245, 158, 11, 0.15); color: #b45309; padding: 0.25rem 0.75rem; border-radius: 20px; font-weight: 700; font-size: 0.85rem;">
+                    0 طلب بانتظار المراجعة
+                </span>
+            </div>
+            <div id="pending-clinics-container">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+        <!-- Two-Column Breakdown: Communes & Specialties -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+            <div style="background: var(--apple-card-bg, white); border-radius: var(--radius-apple); border: 1px solid var(--apple-border); padding: 1.5rem; box-shadow: var(--shadow-apple-sm);">
+                <h4 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <i data-lucide="map-pin" style="width: 18px; height: 18px; color: #0284c7;"></i>
+                    توزيع الحجوزات حسب بلديات سطيف
+                </h4>
+                <div id="admin-communes-list" style="display: flex; flex-direction: column; gap: 0.85rem;">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+            <div style="background: var(--apple-card-bg, white); border-radius: var(--radius-apple); border: 1px solid var(--apple-border); padding: 1.5rem; box-shadow: var(--shadow-apple-sm);">
+                <h4 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <i data-lucide="activity" style="width: 18px; height: 18px; color: #10b981;"></i>
+                    التخصصات الطبية الأكثر طلباً
+                </h4>
+                <div id="admin-specialties-list" style="display: flex; flex-direction: column; gap: 0.85rem;">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- نافذة تسجيل الدخول -->
+<div id="auth-modal" class="modal-overlay">
+    <div class="modal-content auth-modal-card">
+        <div class="modal-header auth-header">
+            <div class="auth-header-title">
+                <div class="auth-logo-badge">ش</div>
+                <div>
+                    <h3 style="margin: 0; font-size: 1.15rem; font-weight: 800;">دخول المشرف — شِـفَـاء سطيف</h3>
+                    <p style="margin: 2px 0 0 0; font-size: 0.8rem; opacity: 0.9;">هذه الصفحة مخصصة لمالك المنصة فقط</p>
+                </div>
+            </div>
+            <button class="modal-close" data-ui="closeAuthModal">&times;</button>
+        </div>
+        <div class="modal-body" style="padding: 1.5rem;">
+            <form id="form-auth-login" data-submit="handleLoginSubmit" class="auth-form-panel">
+                <div class="search-field" style="margin-bottom: 1rem;">
+                    <label><i data-lucide="phone" style="width: 14px; height: 14px; color: var(--primary);"></i> رقم الهاتف *</label>
+                    <input type="text" id="login-identifier" class="search-input" placeholder="مثال: 0661998877" required autocomplete="username">
+                </div>
+                <div class="search-field" style="margin-bottom: 1.25rem;">
+                    <label><i data-lucide="lock" style="width: 14px; height: 14px; color: var(--primary);"></i> كلمة السر *</label>
+                    <div style="position: relative;">
+                        <input type="password" id="login-password" class="search-input" placeholder="••••••••" required autocomplete="current-password">
+                        <button type="button" class="btn-toggle-pw" data-ui="togglePasswordVisibility" data-arg="login-password">
+                            <i data-lucide="eye" style="width: 16px; height: 16px;"></i>
+                        </button>
+                    </div>
+                </div>
+                <input type="hidden" name="auth_role" value="admin">
+                <button type="submit" class="btn-primary" style="width: 100%; font-size: 1rem; padding: 0.85rem; border-radius: 14px;">
+                    <i data-lucide="shield-check" style="width: 18px; height: 18px;"></i>
+                    دخول لوحة الإدارة
+                </button>
+                <div class="demo-auth-box">
+                    <div class="demo-box-title">⚡ تجربة سريعة:</div>
+                    <div class="demo-btn-group" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <button type="button" class="btn-demo-quick btn-demo-admin" data-ui="quickDemoLogin" data-arg="admin">
+                            🛡️ دخول كـ مشرف (تجريبي)
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="toast-container" class="toast-container"></div>
+
+<script src="js/data.js?v=1791039175155"></script>
+<script src="js/api.js?v=1791039175155"></script>
+<script src="js/core.js?v=20261009_fix2"></script>
+<script src="js/ui.js?v=20261008_m1"></script>
+<script src="js/auth.js?v=20261008_m1"></script>
+<script src="js/admin.js?v=20261008_m1"></script>
+<script src="js/init-admin.js?v=20261010_admin1"></script>
+</body>
+</html>
