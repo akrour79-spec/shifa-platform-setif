@@ -1,7 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
-  <g transform="translate(100,100)">
-    <circle r="86" fill="#0f172a"/>
-    <path d="M -21 -62 h 42 v 41 h 41 v 42 h -41 v 41 h -42 v -41 h -41 v -42 h 41 z" fill="#ffffff"/>
-    <path d="M -55 22 l 17 -17 l 12 26 l 17 -38 l 12 28 l 10 -14 l 14 15" fill="none" stroke="#ffffff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+  <defs>
+    <clipPath id="monoClip">
+      <rect x="28" y="28" width="144" height="144" rx="36"/>
+    </clipPath>
+  </defs>
+  <!-- نسخة أحادية اللون: هلال + نبض -->
+  <g>
+    <rect x="28" y="28" width="144" height="144" rx="36" fill="#0f172a"/>
+    <g clip-path="url(#monoClip)">
+      <circle cx="100" cy="100" r="52" fill="#ffffff"/>
+      <circle cx="118" cy="88" r="44" fill="#0f172a"/>
+      <path d="M 44 118 l 16 -16 l 11 24 l 15 -36 l 11 28 l 9 -14 l 14 14"
+            fill="none" stroke="#ffffff" stroke-width="8"
+            stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
   </g>
 </svg>
