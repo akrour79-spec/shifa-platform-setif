@@ -71,6 +71,31 @@ document.addEventListener('DOMContentLoaded', async () => {
             updateAdminGate();
         };
     }
+    // أنيميشن العدّادات بعد تحميل التحليلات
+    if (typeof loadAdminAnalytics === 'function') {
+        const _origLoad = loadAdminAnalytics;
+        loadAdminAnalytics = async function () {
+            await _origLoad();
+            try {
+                const pairs = [
+                    ['kpi-active-clinics', 'admin-kpi-active-clinics'],
+                    ['kpi-total-appts', 'admin-kpi-total-bookings'],
+                    ['kpi-total-patients', 'admin-kpi-total-patients'],
+                ];
+                pairs.forEach(([vis, hid]) => {
+                    const h = document.getElementById(hid), v = document.getElementById(vis);
+                    if (h && v && typeof window.admCountUp === 'function') {
+                        const n = parseInt((h.textContent || '0').replace(/[^\d]/g, ''), 10) || 0;
+                        window.admCountUp(v, n);
+                    }
+                });
+                const mrrH = document.getElementById('admin-kpi-mrr'), mrrV = document.getElementById('kpi-mrr-value');
+                if (mrrH && mrrV) mrrV.textContent = mrrH.textContent;
+                if (typeof window.admAnimateBars === 'function') window.admAnimateBars();
+                if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+            } catch (e) { /* تجاهل */ }
+        };
+    }
     updateAdminGate();
     if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
 });
