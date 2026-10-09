@@ -18,6 +18,7 @@ const UI_ACTIONS = Object.freeze({
     quickDemoLogin,
     showForgotPassword,
     toggleTheme,
+    toggleLang,
     openWalkinModal,
     closeWalkinModal,
     openClinicSettings,

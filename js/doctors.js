@@ -240,7 +240,7 @@ container.innerHTML = banner + doctorsList.map((doc, i) => `
                     </div>
                     <div class="doc-meta-item">
                         <span class="doc-meta-label">التقييم المعتمد</span>
-                        <span class="doc-meta-val" style="color: #d97706;">⭐ ${api.escape(doc.rating)} (${api.escape(doc.reviewsCount)} تقييم)</span>
+                        <span class="doc-meta-val" style="color: #d97706;">${renderStars(doc.rating)} ${api.escape(doc.rating)} (${api.escape(doc.reviewsCount)} تقييم)</span>
                     </div>
                     <div class="doc-meta-item" style="grid-column: 1/-1;">
                         <span class="doc-meta-label">المعلم القريب في سطيف</span>
@@ -270,10 +270,13 @@ container.innerHTML = banner + doctorsList.map((doc, i) => `
             <div class="doc-footer">
                 <button class="btn-primary doc-book-btn" style="flex: 1;" data-doc-id="${api.escape(doc.id)}">
                     <i data-lucide="calendar-check" style="width: 18px; height: 18px;"></i>
-                    احجز تذكرتك الآن
+                    ${t('patient.book.now')}
                 </button>
                 <button class="btn-outline doc-locate-btn" data-lat="${api.escape(doc.lat)}" data-lng="${api.escape(doc.lng)}" data-name="${api.escape(doc.name)}" title="عرض في الخريطة">
                     <i data-lucide="map-pin" style="width: 18px; height: 18px;"></i>
+                </button>
+                <button class="btn-outline doc-review-btn" data-ui="openReviewModal" data-doc-id="${api.escape(doc.id)}" data-doc-name="${api.escape(doc.name)}" title="قيّم هذا الطبيب" style="border-color: #fbbf24; color: #d97706;">
+                    <i data-lucide="star" style="width: 18px; height: 18px;"></i>
                 </button>
             </div>
         </div>
@@ -434,3 +437,101 @@ function locateDoctorOnMap(lat, lng, name) {
     }, 250);
 }
 
+
+/** رسم النجوم حسب التقييم (0-5) */
+function renderStars(rating) {
+    const r = Math.max(0, Math.min(5, Number(rating) || 0));
+    let html = '';
+    for (let i = 1; i <= 5; i++) {
+        const fill = r >= i ? '#f59e0b' : (r >= i - 0.5 ? '#fbbf24' : '#e5e7eb');
+        html += `<svg width="16" height="16" viewBox="0 0 24 24" fill="${fill}" style="display:inline-block;vertical-align:middle"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>`;
+    }
+    return `<span class="stars" title="${r}/5">${html}</span>`;
+}
+
+// ---------------------------------------------------------------------------
+// نافذة التقييم
+// ---------------------------------------------------------------------------
+let reviewTarget = { id: null, name: '' };
+let reviewStars = 0;
+
+function openReviewModal(docId, docName) {
+    if (!api.isAuthenticated()) {
+        showToast('سجل الدخول أولاً لتقييم الطبيب', 'info');
+        if (typeof openAuthModal === 'function') openAuthModal();
+        return;
+    }
+    reviewTarget = { id: docId, name: docName || '' };
+    reviewStars = 0;
+    const nameEl = document.getElementById('review-doc-name');
+    if (nameEl) nameEl.textContent = reviewTarget.name;
+    paintReviewStars();
+    const commentEl = document.getElementById('review-comment');
+    if (commentEl) commentEl.value = '';
+    const listEl = document.getElementById('review-list');
+    if (listEl) listEl.innerHTML = '<div style="text-align:center;color:var(--apple-subtext);padding:1rem">جاري تحميل التقييمات...</div>';
+    document.getElementById('review-modal')?.classList.add('open');
+    loadDoctorReviews(docId);
+    if (window.lucide) lucide.createIcons();
+}
+
+function closeReviewModal() {
+    document.getElementById('review-modal')?.classList.remove('open');
+}
+
+function paintReviewStars() {
+    const box = document.getElementById('review-stars-input');
+    if (!box) return;
+    box.innerHTML = [1, 2, 3, 4, 5].map(i =>
+        `<button type="button" data-star="${i}" style="background:none;border:none;cursor:pointer;padding:2px" aria-label="${i} نجوم">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="${i <= reviewStars ? '#f59e0b' : '#e5e7eb'}"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z"/></svg>
+        </button>`
+    ).join('');
+    box.querySelectorAll('[data-star]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            reviewStars = Number(btn.dataset.star);
+            paintReviewStars();
+        });
+    });
+}
+
+async function loadDoctorReviews(docId) {
+    const listEl = document.getElementById('review-list');
+    try {
+        const res = await api.getReviews(docId, 10, 0);
+        const reviews = res.reviews || [];
+        if (!reviews.length) {
+            if (listEl) listEl.innerHTML = '<div style="text-align:center;color:var(--apple-subtext);padding:1rem">لا توجد تقييمات بعد — كن أول من يقيّم!</div>';
+            return;
+        }
+        if (listEl) listEl.innerHTML = reviews.map(r => `
+            <div style="border-bottom:1px solid #f1f5f9;padding:0.8rem 0">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                    <b>${api.escape(r.patient_name)}</b>
+                    <span>${renderStars(r.rating)}</span>
+                </div>
+                ${r.comment ? `<p style="margin:0.4rem 0 0;color:#475569;font-size:0.92rem">${api.escape(r.comment)}</p>` : ''}
+                <small style="color:#94a3b8">${new Date(r.created_at).toLocaleDateString('ar-DZ')}</small>
+            </div>`).join('');
+    } catch (e) {
+        if (listEl) listEl.innerHTML = '<div style="text-align:center;color:var(--apple-subtext)">تعذر تحميل التقييمات</div>';
+    }
+}
+
+async function submitReview(event) {
+    if (event) event.preventDefault();
+    if (!reviewStars) {
+        showToast('اختر عدد النجوم أولاً', 'error');
+        return;
+    }
+    const comment = document.getElementById('review-comment')?.value.trim() || '';
+    try {
+        const res = await api.submitReview(reviewTarget.id, reviewStars, comment);
+        showToast(res.message || 'شكراً! تم حفظ تقييمك', 'success');
+        closeReviewModal();
+        // تحديث البطاقات لعكس التقييم الجديد
+        if (typeof loadDoctors === 'function') loadDoctors();
+    } catch (e) {
+        showToast(e.message || 'تعذر حفظ التقييم', 'error');
+    }
+}
