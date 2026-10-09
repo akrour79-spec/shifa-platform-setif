@@ -125,34 +125,6 @@ function selectDoctorFromDropdown(docId) {
     openBookingModal(docId);
 }
 
-// Toast Notifications System
-function showToast(message, type = 'success') {
-    const container = document.getElementById('toast-container');
-    if (!container) return;
-
-    // type يتحكم في صنف CSS ولون الأيقونة: نقصره على ثلاث قيم معروفة
-    // حتى لا يصبح الاسم نفسه ناقلاً لهجوم عبر صنف CSS خارجي.
-    const variant = ['success', 'error', 'info'].includes(type) ? type : 'info';
-
-    const toast = document.createElement('div');
-    toast.className = `toast-item ${variant}`;
-    const icon = variant === 'success' ? 'check-circle' : (variant === 'error' ? 'alert-circle' : 'info');
-
-    // الرسالة قد تأتي من الخادم، فنهرّبها قبل الإدراج
-    toast.innerHTML = `
-        <i data-lucide="${icon}" style="width: 20px; height: 20px; color: ${variant === 'success' ? '#10b981' : (variant === 'error' ? '#ef4444' : '#0284c7')};"></i>
-        <span>${api.escape(message)}</span>
-    `;
-    container.appendChild(toast);
-    if (window.lucide) lucide.createIcons();
-
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateX(-30px)';
-        toast.style.transition = 'all 0.3s ease';
-        setTimeout(() => toast.remove(), 300);
-    }, 3500);
-}
 
 // Quick Category Pill Filter
 function filterBySpecialtyPill(specialtyId, btnElement) {
@@ -182,37 +154,6 @@ function filterBySpecialtyPill(specialtyId, btnElement) {
    tickNumber: وميض رقم الطابور عند تغيّره فقط
    renderDoctorsSkeleton: هيكل تحميل لبطاقات الأطباء
    ============================================================ */
-const prefersReducedMotion = () =>
-    window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-/** عدّ تصاعدي متحرك لعنصر عددي */
-function animateCount(el, to, duration = 600) {
-    if (!el) return;
-    const target = Number(to) || 0;
-    if (prefersReducedMotion()) { el.textContent = target; el.dataset.countVal = target; return; }
-    const from = Number(el.dataset.countVal || 0);
-    el.dataset.countVal = target;
-    if (from === target) { el.textContent = target; return; }
-    const start = performance.now();
-    const step = (now) => {
-        const p = Math.min(1, (now - start) / duration);
-        const eased = 1 - Math.pow(1 - p, 3);
-        el.textContent = Math.round(from + (target - from) * eased);
-        if (p < 1) requestAnimationFrame(step);
-    };
-    requestAnimationFrame(step);
-}
-
-/** وميض رقم الطابور عند تغيّره فقط (لا يومض في كل تحديث) */
-function tickNumber(el, text) {
-    if (!el) return;
-    if (el.textContent === text) return;
-    el.textContent = text;
-    if (prefersReducedMotion()) return;
-    el.classList.remove('num-tick');
-    void el.offsetWidth;
-    el.classList.add('num-tick');
-}
 
 /** هيكل تحميل يحاكي بطاقة الطبيب أثناء جلب البيانات */
 function renderDoctorsSkeleton(count = 6) {

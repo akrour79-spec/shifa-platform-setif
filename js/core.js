@@ -314,3 +314,100 @@ function dismissPWABanner() {
   if (banner) banner.style.display = 'none';
   try { sessionStorage.setItem('pwa_dismissed', 'true'); } catch (e) {}
 }
+
+// ---------------------------------------------------------------------------
+// SHIFA MOTION PACK — مساعدات الحركة (مشتركة بين كل الصفحات)
+// ---------------------------------------------------------------------------
+const prefersReducedMotion = () =>
+    window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/** وميض رقم الطابور عند تغيّره فقط */
+function tickNumber(el, text) {
+    if (!el) return;
+    if (el.textContent === text) return;
+    el.textContent = text;
+    if (prefersReducedMotion()) return;
+    el.classList.remove('num-tick');
+    void el.offsetWidth;
+    el.classList.add('num-tick');
+}
+
+/** عدّ تصاعدي متحرك لعنصر عددي */
+function animateCount(el, to, duration = 600) {
+    if (!el) return;
+    const target = Number(to) || 0;
+    if (prefersReducedMotion()) { el.textContent = target; el.dataset.countVal = target; return; }
+    const from = Number(el.dataset.countVal || 0);
+    el.dataset.countVal = target;
+    if (from === target) { el.textContent = target; return; }
+    const start = performance.now();
+    const step = (now) => {
+        const p = Math.min(1, (now - start) / duration);
+        const eased = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.round(from + (target - from) * eased);
+        if (p < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+}
+
+async function refreshAppointments() {
+    if (!api.isAuthenticated()) {
+        // زائر: نُفرّغ الطابور بدل عرض بيانات محلية قديمة
+        state.appointments = [];
+        state.activeDoctorId = null;
+        state.currentQueueNumber = 0;
+        renderQueue();
+        if (typeof renderDoctorDashboard === 'function') renderDoctorDashboard();
+        if (typeof renderStats === 'function') renderStats();
+        return;
+    }
+
+    try {
+        const isClinic = state.currentUser &&
+            ['doctor', 'secretary', 'admin'].includes(state.currentUser.role);
+
+        if (isClinic) {
+            // الطبيب يقرأ طابور عيادته من /api/queue — يعيد هوية العيادة
+            // وحالات المواعيد الفعلية من الخادم، فنعرف من يقف عند المكتب
+            // الآن بدل تخمينه من رقم الدور في المتصفح.
+            const result = await api.queue();
+            state.activeDoctorId = result.clinic?.id || state.activeDoctorId;
+            state.appointments = api.normalizeAppointments(result.queue || []);
+        } else {
+            const result = await api.myAppointments({ scope: 'mine', limit: 100 });
+            state.appointments = api.normalizeAppointments(result.appointments);
+        }
+
+        syncCurrentQueueNumber();
+        renderQueue();
+        if (typeof renderDoctorDashboard === 'function') renderDoctorDashboard();
+        if (typeof renderStats === 'function') renderStats();
+    } catch (err) {
+        if (err.code !== 'unauthenticated') {
+            console.warn('تعذّر تحميل المواعيد:', err.message);
+        }
+        state.appointments = [];
+        renderQueue();
+        if (typeof renderDoctorDashboard === 'function') renderDoctorDashboard();
+    }
+}
+
+/**
+ * مزامنة رقم الدور الحالي مع الخادم.
+ * -----------------------------------------------------------------------------
+ * الحالة المعروضة كانت تُشتق من "أكبر رقم استُدعي في هذه الجلسة"، أي أن
+ * إعادة تحميل الصفحة كانت تُظهر "لا يوجد مريض حالي" رغم وجود مريض عند
+ * المكتب. الخادم وحده يعرف من حالته in_consultation.
+ */
+function syncCurrentQueueNumber() {
+    const inRoom = state.appointments.find((a) => a.statusKey === 'in_consultation');
+    if (inRoom) {
+        state.currentQueueNumber = inRoom.queueNumber;
+        return;
+    }
+    // لا أحد عند المكتب: الرقم المعروض هو أعلى رقم مُنجز، لا صفر
+    const done = state.appointments
+        .filter((a) => a.statusKey === 'completed')
+        .map((a) => a.queueNumber);
+    state.currentQueueNumber = done.length ? Math.max(...done) : 0;
+}
