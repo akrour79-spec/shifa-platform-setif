@@ -350,6 +350,16 @@ function animateCount(el, to, duration = 600) {
     requestAnimationFrame(step);
 }
 
+// إحصائيات الواجهة (نُقلت من js/billing.js 2026-10-09): كانت معرّفة في ملف
+// خاص بالطبيب، فكان الاستدعاء المباشر من patient.html يرمي ReferenceError
+// ويوقف كل التهيئة بعده (الخريطة، الطابور، تحميل الأطباء).
+function renderStats() {
+    const docCount = document.getElementById('stat-doctors-count');
+    const aptCount = document.getElementById('stat-appointments-count');
+    animateCount(docCount, state.doctors.length);
+    animateCount(aptCount, state.appointments.length);
+}
+
 async function refreshAppointments() {
     if (!api.isAuthenticated()) {
         // زائر: نُفرّغ الطابور بدل عرض بيانات محلية قديمة

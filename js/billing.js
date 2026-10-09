@@ -193,13 +193,8 @@ async function submitSubscriptionOrder(event) {
     }
 }
 
-// Stats Calculation
-function renderStats() {
-    const docCount = document.getElementById('stat-doctors-count');
-    const aptCount = document.getElementById('stat-appointments-count');
-    animateCount(docCount, state.doctors.length);
-    animateCount(aptCount, state.appointments.length);
-}
+// Stats Calculation — نُقلت إلى js/core.js (2026-10-09): patient.html لا تحمّل
+// billing.js، فكان الاستدعاء المباشر يرمي ReferenceError ويعطّل الصفحة.
 
 // Toast helper
 
