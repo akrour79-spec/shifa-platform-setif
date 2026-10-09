@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     initAuth();
     initNavigation();
     initFilters();
-    renderStats();
+    if (typeof renderStats === 'function') renderStats();
     initMap();
     renderQueue();
     renderDoctorDashboard();

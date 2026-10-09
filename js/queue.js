@@ -343,7 +343,6 @@ let queueScreenTimer = null;
 /** آخر بيانات ناجحة لشاشة الطابور — تُعرض عند انقطاع الاتصال */
 let queueScreenCache = { data: null, at: 0 };
 
-
 function stopQueueScreenPolling() {
     if (queueScreenTimer) {
         clearTimeout(queueScreenTimer);
@@ -387,6 +386,7 @@ async function refreshQueueScreen() {
         const waiting = Number(data.waitingCount) || 0;
         const remaining = Number(data.stats?.remaining) || 0;
 
+        // نحفظ آخر بيانات ناجحة — تُعرض عند انقطاع الاتصال بدل شاشة فارغة
         queueScreenCache.data = data;
         queueScreenCache.at = Date.now();
 
@@ -408,6 +408,8 @@ async function refreshQueueScreen() {
         const seconds = Number(data.refreshAfterSeconds) || 15;
         queueScreenTimer = setTimeout(refreshQueueScreen, seconds * 1000);
     } catch (err) {
+        // عند الفشل: نعرض آخر بيانات معروفة مع شارة "غير محدّث" بدل
+        // مسح الشاشة — مهم في العيادات ذات الاتصال الضعيف
         const cached = queueScreenCache.data;
         if (cached) {
             const agoMin = Math.max(1, Math.round((Date.now() - queueScreenCache.at) / 60000));
@@ -442,10 +444,12 @@ function setTvScreen({ number, name, subtitle, clinicName, stale = false }) {
     if (nameEl) nameEl.textContent = name ? `المريض: ${name}` : 'في انتظار المريض التالي';
     if (subEl) subEl.textContent = subtitle || '';
     if (clinicEl) clinicEl.textContent = clinicName || '';
+    // شارة بصرية للبيانات القديمة — تُزال تلقائياً عند عودة الاتصال
     const overlay = document.getElementById('clinic-tv-overlay');
     if (overlay) overlay.classList.toggle('tv-stale', stale);
 }
 
+// عند عودة الاتصال: نحدّث الشاشة فوراً بدل انتظار المؤقت
 window.addEventListener('online', () => {
     if (document.getElementById('clinic-tv-overlay')?.classList.contains('open')) {
         refreshQueueScreen();
@@ -606,7 +610,7 @@ async function handleWalkinSubmit(event) {
         const result = await api.walkIn({ patientName: name, patientPhone: phone, hasChifa });
 
         await refreshAppointments();
-        renderStats();
+        if (typeof renderStats === 'function') renderStats();
         closeWalkinModal();
 
         showToast(`✅ تم تسجيل المريض برقم دور #${result.walkIn.queue_number}`);

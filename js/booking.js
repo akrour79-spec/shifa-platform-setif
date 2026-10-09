@@ -210,7 +210,7 @@ async function submitBooking(event) {
 
         closeBookingModal();
         await refreshAppointments();
-        renderStats();
+        if (typeof renderStats === 'function') renderStats();
 
         showSuccessTicket(apt, bookedDoctor);
     } catch (err) {
