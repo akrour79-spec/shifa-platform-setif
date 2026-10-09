@@ -538,6 +538,8 @@ test('نظام i18n: قاموس عربي/فرنسي وزر التبديل', () =
   for (const page of ['patient.html', 'doctor.html']) {
     const html = read(page);
     assert.ok(/js\/i18n\.js/.test(html), `${page}: لا تحميل i18n.js`);
-    assert.ok(/data-ui="toggleLang"/.test(html), `${page}: لا زر تبديل اللغة`);
+    // قرار 2026-10-09: زر التبديل مُزال مؤقتاً (ترجمة جزئية أسوأ من لا ترجمة)
+    // — البنية تبقى محمّلة حتى تكتمل الترجمة الكاملة في مشروع لاحق.
+    assert.ok(!/data-ui="toggleLang"/.test(html), `${page}: زر toggleLang يجب أن يبقى مُزالاً مؤقتاً`);
   }
 });
