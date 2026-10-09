@@ -42,6 +42,9 @@ const UI_ACTIONS = Object.freeze({
     installPWA,
     dismissPWABanner,
     print,
+    // إصلاح 2026-10-09: زر إيقاف/استئناف الحجوزات في لوحة الطبيب كان
+    // غير مسجَّل — الدالة موجودة في js/dashboard.js.
+    toggleBookingStatus,
 });
 const FORM_ACTIONS = Object.freeze({
     handleLoginSubmit: (...args) => handleLoginSubmit(...args),
