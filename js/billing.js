@@ -47,6 +47,12 @@ function renderPricingCards() {
         const periodText = isYearly ? 'دج / سنوياً' : 'دج / شهرياً';
         const monthlyEquivalent = isYearly ? Math.round(plan.priceYearly / 12) : plan.priceMonthly;
         const isPopular = plan.popular;
+        const isFree = price === 0;
+        const priceHtml = isFree
+            ? '<div class="price-val">مجاني</div>'
+            : `<div class="price-val" style="${isPopular ? 'color: var(--primary-emerald-dark);' : ''}">
+                        ${price.toLocaleString('ar-DZ')} <small>${periodText}</small>
+                    </div>`;
 
         return `
             <div class="pricing-card ${isPopular ? 'featured' : ''}">
@@ -54,17 +60,15 @@ function renderPricingCards() {
                 <div>
                     <h4 style="font-size: 1.3rem; font-weight: 800; ${isPopular ? 'color: var(--primary-emerald-dark);' : ''}">${api.escape(plan.name)}</h4>
                     <p style="font-size: 0.85rem; color: var(--apple-subtext); margin-top: 0.25rem;">${api.escape(plan.target)}</p>
-                    <div class="price-val" style="${isPopular ? 'color: var(--primary-emerald-dark);' : ''}">
-                        ${price.toLocaleString('ar-DZ')} <small>${periodText}</small>
-                    </div>
-                    ${isYearly ? `<div style="font-size: 0.8rem; color: var(--primary-emerald); font-weight: 700; margin-bottom: 0.5rem;">توفير 20% (يعادل ${monthlyEquivalent.toLocaleString('ar-DZ')} دج/شهر)</div>` : ''}
+                    ${priceHtml}
+                    ${!isFree && isYearly ? `<div style="font-size: 0.8rem; color: var(--primary-emerald); font-weight: 700; margin-bottom: 0.5rem;">توفير 20% (يعادل ${monthlyEquivalent.toLocaleString('ar-DZ')} دج/شهر)</div>` : ''}
                     <ul class="feature-list">
                         ${plan.features.map(f => `<li><i data-lucide="check" style="width: 16px; color: var(--primary-emerald);"></i> ${api.escape(f)}</li>`).join('')}
                     </ul>
                 </div>
                 <button class="${isPopular ? 'btn-primary' : 'btn-outline'}" style="width: 100%; ${isPopular ? 'background: linear-gradient(135deg, var(--primary-emerald), #0071e3);' : ''}" data-ui="openCheckoutModal" data-arg="${plan.id}">
                     <i data-lucide="zap" style="width: 16px; height: 16px;"></i>
-                    ${isYearly ? 'اشترك سنوياً ووفر 20%' : 'اشترك بالبطاقة الذهبية / CIB'}
+                    ${isFree ? 'ابدأ مجاناً الآن' : (isYearly ? 'اشترك سنوياً ووفر 20%' : 'اشترك بالبطاقة الذهبية / CIB')}
                 </button>
             </div>
         `;
@@ -111,8 +115,13 @@ function openCheckoutModal(planId) {
     const plan = SUBSCRIPTION_PLANS.find(p => p.id === planId);
     if (!plan) return;
 
+    // الباقة المجانية: تفعيل مباشر بلا دفع
     const isYearly = state.billingCycle === 'yearly';
     const amount = isYearly ? plan.priceYearly : plan.priceMonthly;
+    if (amount === 0) {
+        activateFreePlan(plan);
+        return;
+    }
     const cycleText = isYearly ? 'اشتراك سنوي (توفير 20%)' : 'اشتراك شهري';
 
     const modalPlanName = document.getElementById('checkout-plan-name');
@@ -133,6 +142,14 @@ function openCheckoutModal(planId) {
 
 function closeCheckoutModal() {
     document.getElementById('checkout-modal')?.classList.remove('open');
+}
+
+/** تفعيل الباقة المجانية مباشرة — بلا دفع */
+function activateFreePlan(plan) {
+    try {
+        localStorage.setItem('shifa_plan', JSON.stringify({ id: plan.id, since: new Date().toISOString() }));
+    } catch (e) { /* تجاهل */ }
+    showToast(`🎉 تم تفعيل ${plan.name} بنجاح — مرحباً بك في منصة شفاء!`, 'success');
 }
 
 async function submitSubscriptionOrder(event) {

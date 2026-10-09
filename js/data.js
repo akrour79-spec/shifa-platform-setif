@@ -12,9 +12,23 @@
 
 const SUBSCRIPTION_PLANS = [
     {
+        id: "free",
+        name: "الباقة المجانية",
+        badge: "ابدأ بلاش",
+        priceMonthly: 0,
+        priceYearly: 0,
+        features: [
+            "حتى 20 حجز موعد شهرياً",
+            "ملف عيادة على منصة شفاء",
+            "جدول مواعيد بسيط",
+            "دعم عبر البريد الإلكتروني"
+        ],
+        target: "جرّب المنصة بلا التزام"
+    },
+    {
         id: "starter",
         name: "الباقة الأساسية (Essential)",
-        badge: "14 يوماً مجاناً",
+        badge: "30 يوماً مجاناً",
         priceMonthly: 4900, // DZD
         priceYearly: 49000,
         features: [
@@ -29,7 +43,7 @@ const SUBSCRIPTION_PLANS = [
     {
         id: "pro",
         name: "الباقة الكاملة (Complete)",
-        badge: "الأكثر اختياراً في سطيف",
+        badge: "30 يوماً مجاناً — الأكثر اختياراً",
         popular: true,
         priceMonthly: 9900,
         priceYearly: 99000,
