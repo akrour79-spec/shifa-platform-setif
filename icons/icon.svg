@@ -1,20 +1,25 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
     <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#059669"/>
-      <stop offset="100%" stop-color="#0284c7"/>
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="55%" stop-color="#059669"/>
+      <stop offset="100%" stop-color="#0e7490"/>
     </linearGradient>
+    <clipPath id="pwaClip">
+      <rect width="512" height="512" rx="128"/>
+    </clipPath>
     <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
       <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000000" flood-opacity="0.25"/>
     </filter>
   </defs>
   <rect width="512" height="512" rx="128" fill="url(#grad)"/>
-  <circle cx="390" cy="120" r="28" fill="#10b981" opacity="0.6"/>
-  <circle cx="120" cy="400" r="40" fill="#38bdf8" opacity="0.4"/>
-  <!-- Medical Plus / Crescent Symbol -->
-  <g transform="translate(256, 256) scale(1.6)" filter="url(#shadow)">
-    <path d="M -40 -12 L -12 -12 L -12 -40 C -12 -46.6 6.6 -46.6 12 -40 L 12 -12 L 40 -12 C 46.6 -12 46.6 12 40 12 L 12 12 L 12 40 C 12 46.6 -12 46.6 -12 40 L -12 12 L -40 12 C -46.6 12 -46.6 -12 -40 -12 Z" fill="#ffffff"/>
+  <g clip-path="url(#pwaClip)" filter="url(#shadow)">
+    <!-- هلال + نبض القلب -->
+    <circle cx="256" cy="240" r="130" fill="#ffffff"/>
+    <circle cx="310" cy="205" r="110" fill="url(#grad)"/>
+    <path d="M 110 300 l 40 -40 l 28 60 l 38 -92 l 28 70 l 24 -36 l 36 36"
+          fill="none" stroke="#ffffff" stroke-width="22"
+          stroke-linecap="round" stroke-linejoin="round"/>
   </g>
-  <!-- Arabic Stylized Typography "ش" -->
-  <text x="256" y="440" font-family="'Cairo', 'Outfit', sans-serif" font-weight="900" font-size="76" fill="#ffffff" text-anchor="middle" letter-spacing="2">شِــفَـاء</text>
+  <text x="256" y="452" font-family="'Cairo', 'Outfit', sans-serif" font-weight="900" font-size="72" fill="#ffffff" text-anchor="middle" letter-spacing="2">شِــفَـاء</text>
 </svg>
