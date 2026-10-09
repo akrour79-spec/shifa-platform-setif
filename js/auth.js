@@ -341,7 +341,7 @@ async function handleSignupSubmit(event) {
                 `🏥 سُجّلت عيادتك "${result.clinic.name}" وهي بانتظار مراجعة الإدارة قبل ظهورها للمرضى.`,
                 'info'
             );
-            setTimeout(() => { openCheckoutModal('pro'); }, 800);
+            setTimeout(() => { if (typeof openCheckoutModal === 'function') openCheckoutModal('pro'); }, 800);
         }
         await refreshAppointments();
     } catch (err) {
@@ -381,7 +381,7 @@ async function quickDemoLogin(type) {
         updateUserUI();
         closeAuthModal();
         showToast('🛡️ أهلاً بك! تم دخولك بصلاحيات المشرف ومالك المنصة.', 'success');
-        openAdminAnalyticsModal();
+        if (typeof openAdminAnalyticsModal === 'function') openAdminAnalyticsModal();
         return;
     }
 

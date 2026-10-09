@@ -88,7 +88,11 @@ function openTicketFromList(aptId) {
         address: apt.address || 'سطيف',
         title: apt.specialtyName || ''
     };
-    showSuccessTicket(apt, doc);
+    if (typeof showSuccessTicket === 'function') {
+        showSuccessTicket(apt, doc);
+    } else {
+        showToast('تم العثور على الموعد', 'info');
+    }
 }
 
 // Glassmorphism Dark Mode System
@@ -205,21 +209,21 @@ function switchView(viewName) {
             target.classList.add('view-enter');
         }
         if (viewName === 'patient') {
-            loadDoctors();
+            if (typeof loadDoctors === 'function') loadDoctors();
         } else if (viewName === 'patient-portal') {
-            loadPatientPortal();
+            if (typeof loadPatientPortal === 'function') loadPatientPortal();
         } else if (viewName === 'monetization') {
-            renderPricingCards();
-            renderSubscriptions();
-            loadAdminAnalytics();
+            if (typeof renderPricingCards === 'function') renderPricingCards();
+            if (typeof renderSubscriptions === 'function') renderSubscriptions();
+            if (typeof loadAdminAnalytics === 'function') loadAdminAnalytics();
         } else if (viewName === 'queue') {
             renderQueue();
         } else if (viewName === 'doctor') {
-            renderDoctorDashboard();
+            if (typeof renderDoctorDashboard === 'function') renderDoctorDashboard();
         } else if (viewName === 'map') {
             requestAnimationFrame(() => {
                 if (!state.map) {
-                    initMap();
+                    if (typeof initMap === 'function') initMap();
                 } else {
                     state.map.invalidateSize();
                 }
@@ -316,4 +320,33 @@ function initScrollReveal() {
             io.observe(el);
         });
     }).observe(document.body, { childList: true, subtree: true });
+}
+
+// Toast Notifications System
+function showToast(message, type = 'success') {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    // type يتحكم في صنف CSS ولون الأيقونة: نقصره على ثلاث قيم معروفة
+    // حتى لا يصبح الاسم نفسه ناقلاً لهجوم عبر صنف CSS خارجي.
+    const variant = ['success', 'error', 'info'].includes(type) ? type : 'info';
+
+    const toast = document.createElement('div');
+    toast.className = `toast-item ${variant}`;
+    const icon = variant === 'success' ? 'check-circle' : (variant === 'error' ? 'alert-circle' : 'info');
+
+    // الرسالة قد تأتي من الخادم، فنهرّبها قبل الإدراج
+    toast.innerHTML = `
+        <i data-lucide="${icon}" style="width: 20px; height: 20px; color: ${variant === 'success' ? '#10b981' : (variant === 'error' ? '#ef4444' : '#0284c7')};"></i>
+        <span>${api.escape(message)}</span>
+    `;
+    container.appendChild(toast);
+    if (window.lucide) lucide.createIcons();
+
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(-30px)';
+        toast.style.transition = 'all 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+    }, 3500);
 }

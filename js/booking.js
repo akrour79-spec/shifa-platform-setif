@@ -243,66 +243,7 @@ async function submitBooking(event) {
  * الزائر غير المسجّل يرى لا شيء (لا توجد مواعيد "عامة" — بيانات شخصية).
  * المريض يرى مواعيده، والطبيب يرى مواعيد عيادته.
  */
-async function refreshAppointments() {
-    if (!api.isAuthenticated()) {
-        // زائر: نُفرّغ الطابور بدل عرض بيانات محلية قديمة
-        state.appointments = [];
-        state.activeDoctorId = null;
-        state.currentQueueNumber = 0;
-        renderQueue();
-        renderDoctorDashboard();
-        renderStats();
-        return;
-    }
 
-    try {
-        const isClinic = state.currentUser &&
-            ['doctor', 'secretary', 'admin'].includes(state.currentUser.role);
-
-        if (isClinic) {
-            // الطبيب يقرأ طابور عيادته من /api/queue — يعيد هوية العيادة
-            // وحالات المواعيد الفعلية من الخادم، فنعرف من يقف عند المكتب
-            // الآن بدل تخمينه من رقم الدور في المتصفح.
-            const result = await api.queue();
-            state.activeDoctorId = result.clinic?.id || state.activeDoctorId;
-            state.appointments = api.normalizeAppointments(result.queue || []);
-        } else {
-            const result = await api.myAppointments({ scope: 'mine', limit: 100 });
-            state.appointments = api.normalizeAppointments(result.appointments);
-        }
-
-        syncCurrentQueueNumber();
-        renderQueue();
-        renderDoctorDashboard();
-        renderStats();
-    } catch (err) {
-        if (err.code !== 'unauthenticated') {
-            console.warn('تعذّر تحميل المواعيد:', err.message);
-        }
-        state.appointments = [];
-        renderQueue();
-    }
-}
-
-/**
- * مزامنة رقم الدور الحالي مع الخادم.
- * -----------------------------------------------------------------------------
- * الحالة المعروضة كانت تُشتق من "أكبر رقم استُدعي في هذه الجلسة"، أي أن
- * إعادة تحميل الصفحة كانت تُظهر "لا يوجد مريض حالي" رغم وجود مريض عند
- * المكتب. الخادم وحده يعرف من حالته in_consultation.
- */
-function syncCurrentQueueNumber() {
-    const inRoom = state.appointments.find((a) => a.statusKey === 'in_consultation');
-    if (inRoom) {
-        state.currentQueueNumber = inRoom.queueNumber;
-        return;
-    }
-    // لا أحد عند المكتب: الرقم المعروض هو أعلى رقم مُنجز، لا صفر
-    const done = state.appointments
-        .filter((a) => a.statusKey === 'completed')
-        .map((a) => a.queueNumber);
-    state.currentQueueNumber = done.length ? Math.max(...done) : 0;
-}
 
 
 /**
