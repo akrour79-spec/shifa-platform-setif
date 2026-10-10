@@ -268,7 +268,7 @@ async function callNextPatientWithSpeech() {
         state.currentQueueNumber = result.called.queue_number;
         await refreshAppointments();
         renderQueue();
-        renderDoctorDashboard();
+        if (typeof renderDoctorDashboard === 'function') renderDoctorDashboard();
 
         speakPatientCallout(
             result.called.patient_name,
@@ -290,7 +290,7 @@ async function callSpecificPatient(aptId) {
         state.currentQueueNumber = result.called.queue_number;
         await refreshAppointments();
         renderQueue();
-        renderDoctorDashboard();
+        if (typeof renderDoctorDashboard === 'function') renderDoctorDashboard();
 
         speakPatientCallout(
             result.called.patient_name,
