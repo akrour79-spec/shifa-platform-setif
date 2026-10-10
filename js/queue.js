@@ -130,16 +130,36 @@ function renderQueue() {
     const currentNameDisplay = document.getElementById('live-queue-patient-name');
     const tvNumDisplay = document.getElementById('tv-number-display');
     const tvNameDisplay = document.getElementById('tv-patient-name-display');
-
-    if (!list) return;
+    // عناصر عرض المريض فقط (patient.html الجديدة)
+    const patientNumDisplay = document.getElementById('patient-queue-number');
+    const patientWaitDisplay = document.getElementById('patient-queue-wait');
 
     const currentApt = state.appointments.find(a => a.queueNumber === state.currentQueueNumber);
-
     const queueLabel = `#${String(state.currentQueueNumber).padStart(2, '0')}`;
 
     // وميض الرقم عند تغيّر الدور فقط — tickNumber تتخطى إن لم يتغيّر
     tickNumber(currentNumDisplay, queueLabel);
     if (currentNameDisplay) currentNameDisplay.textContent = currentApt ? currentApt.patientName : "لا يوجد مريض حالي";
+
+    // عرض المريض: دوره الخاص والانتظار المتبقي
+    if (patientNumDisplay) {
+        const myApt = state.appointments.find(a => {
+            const user = (() => { try { return api.getUser(); } catch (e) { return null; } })();
+            return user && (a.patientId === user.id || a.patientPhone === user.phone);
+        });
+        if (myApt && myApt.queueNumber) {
+            patientNumDisplay.textContent = `#${String(myApt.queueNumber).padStart(2, '0')}`;
+            const ahead = myApt.queueNumber - state.currentQueueNumber;
+            if (patientWaitDisplay) {
+                patientWaitDisplay.textContent = ahead <= 0 ? '🎉 حان دورك — توجه لمكتب الطبيب' : `متبقٍ ${ahead} ${ahead === 1 ? 'مريض' : 'مرضى'} قبلك`;
+            }
+        } else {
+            patientNumDisplay.textContent = '--';
+            if (patientWaitDisplay) patientWaitDisplay.textContent = 'لا يوجد لديك حجز اليوم';
+        }
+    }
+
+    if (!list) return;
 
     tickNumber(tvNumDisplay, queueLabel);
     if (tvNameDisplay) tvNameDisplay.textContent = currentApt ? `المريض: ${currentApt.patientName}` : "في انتظار المريض التالي";
