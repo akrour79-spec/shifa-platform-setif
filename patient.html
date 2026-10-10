@@ -310,72 +310,29 @@
         <!-- VIEW 3: Live Queue & Waiting Room (السكرتارية وقاعة الانتظار الذكية) -->
         
 <div id="view-queue" class="view-panel" style="display: none;">
-            <div class="queue-layout-grid" style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem;">
-                
-                <!-- Live Ticket Board with Audio Speech Engine -->
-                <div style="background: linear-gradient(135deg, #0f172a, #1e293b); color: white; padding: 2rem; border-radius: var(--radius-xl); text-align: center; display: flex; flex-direction: column; justify-content: space-between; box-shadow: var(--shadow-apple-md);">
-                    <div>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                            <span style="display: inline-flex; align-items: center; gap: 6px; background: rgba(16, 185, 129, 0.2); color: #34d399; padding: 0.35rem 0.85rem; border-radius: 9999px; font-size: 0.82rem; font-weight: 700;">
-                                <span style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; display: inline-block;"></span>
-                                🔴 قاعة الانتظار الذكية
-                            </span>
-                            <button class="btn-queue-action" data-ui="toggleClinicTVMode" style="background: rgba(255,255,255,0.1); color: white; border: none;">
-                                <i data-lucide="tv" style="width: 15px; height: 15px;"></i>
-                                شاشة TV العيادة
-                            </button>
-                        </div>
-
-                        <div id="speech-wave-container" class="sound-wave-box" style="display: none; justify-content: center; margin: 0.5rem 0;">
-                            <span></span><span></span><span></span><span></span><span></span>
-                            <small style="color: #34d399; font-weight: 700; margin-right: 6px; font-size: 0.8rem;">جاري النطق الصوتي الآن...</small>
-                        </div>
-
-                        <h4 style="font-size: 1.05rem; opacity: 0.85; margin-bottom: 0.25rem;">المريض الحالي في مكتب الطبيب</h4>
-                        <div id="live-queue-current-name" style="font-size: 1.2rem; font-weight: 800; color: #38bdf8;">د. كريم بوزيد - عيادة سطيف</div>
-                        
-                        <div id="live-queue-current" style="font-size: 5.5rem; font-weight: 900; color: #10b981; line-height: 1; margin: 0.75rem 0; font-family: monospace;">#02</div>
-                        <p id="live-queue-patient-name" style="font-size: 1.1rem; font-weight: 700; color: white; margin-bottom: 1rem;">محمد عبد السلام</p>
-
-                        <!-- Audio Voice Controls -->
-                        <div style="background: rgba(255,255,255,0.05); padding: 0.85rem; border-radius: 14px; border: 1px solid rgba(255,255,255,0.1); margin-top: 0.5rem;">
-                            <label style="display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem; cursor: pointer; color: #e2e8f0;">
-                                <input type="checkbox" id="chk-enable-speech" checked style="accent-color: #10b981; width: 16px; height: 16px;">
-                                📢 نطق صوتي آلي بالعربية (Web Speech Synthesis)
-                            </label>
-                        </div>
+            <!-- شاشة انتظار المريض: عرض فقط — بلا أي تحكم إداري -->
+            <div style="max-width: 640px; margin: 0 auto;">
+                <div style="background: linear-gradient(135deg, #0f172a, #1e293b); color: white; padding: 2rem; border-radius: var(--radius-xl); text-align: center; box-shadow: var(--shadow-apple-md);">
+                    <div style="margin-bottom: 1rem;">
+                        <span style="display: inline-flex; align-items: center; gap: 6px; background: rgba(16, 185, 129, 0.2); color: #34d399; padding: 0.35rem 0.85rem; border-radius: 9999px; font-size: 0.82rem; font-weight: 700;">
+                            <span style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; display: inline-block;"></span>
+                            🔴 قاعة الانتظار — مباشر
+                        </span>
                     </div>
 
-                    <div style="margin-top: 1.5rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1.25rem; display: flex; flex-direction: column; gap: 0.6rem;">
-                        <button class="btn-primary" style="width: 100%; font-size: 1.05rem; padding: 0.9rem; background: linear-gradient(135deg, #10b981, #0284c7);" data-ui="callNextPatientWithSpeech">
-                            <i data-lucide="volume-2" style="width: 20px; height: 20px;"></i>
-                            استدعاء المريض التالي بصوت تلقائي
-                        </button>
-                        <button class="btn-outline" style="width: 100%; border-color: rgba(255,255,255,0.3); color: white;" data-ui="repeatCurrentCallout">
-                            <i data-lucide="rotate-cw" style="width: 16px; height: 16px;"></i>
-                            إعادة نطق اسم المريض الحالي
-                        </button>
+                    <h4 style="font-size: 1.05rem; opacity: 0.85; margin-bottom: 0.25rem;">الدور الحالي عند الطبيب</h4>
+                    <div id="live-queue-current" style="font-size: 5.5rem; font-weight: 900; color: #10b981; line-height: 1; margin: 0.75rem 0; font-family: monospace;">--</div>
+
+                    <div id="patient-queue-status" style="background: rgba(255,255,255,0.05); padding: 1rem; border-radius: 14px; border: 1px solid rgba(255,255,255,0.1); margin-top: 1rem;">
+                        <div style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 0.25rem;">دورك</div>
+                        <div id="patient-queue-number" style="font-size: 2rem; font-weight: 800; color: white;">--</div>
+                        <div id="patient-queue-wait" style="font-size: 0.85rem; color: #34d399; margin-top: 0.25rem;"></div>
                     </div>
+
+                    <p style="font-size: 0.8rem; color: #64748b; margin-top: 1rem;">
+                        💡 تحدث الشاشة تلقائياً — لا حاجة لتحديث الصفحة
+                    </p>
                 </div>
-
-                <!-- Secretary Patient Queue List & Controls -->
-                <div style="background: white; border-radius: var(--radius-xl); border: 1px solid var(--border-color); padding: 1.5rem;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
-                        <div>
-                            <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--apple-text);">طابور العيادة وإدارة قاعة الانتظار</h3>
-                            <span style="font-size: 0.82rem; color: var(--apple-subtext);">تحكم فوري لمكتب السكرتارية والطبيب</span>
-                        </div>
-                        <button class="btn-primary" style="font-size: 0.85rem; padding: 0.5rem 0.9rem;" data-ui="openWalkinModal">
-                            <i data-lucide="user-plus" style="width: 16px; height: 16px;"></i>
-                            تسجيل مريض مباشر (Walk-in)
-                        </button>
-                    </div>
-
-                    <div id="queue-list">
-                        <!-- Populated by JS -->
-                    </div>
-                </div>
-
             </div>
         </div>
 
