@@ -25,7 +25,7 @@
     <meta name="apple-mobile-web-app-title" content="شفاء سطيف">
     <link rel="apple-touch-icon" href="/icons/icon-192.svg">
     <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
-    <link rel="stylesheet" href="css/style.css?v=20261004_v12">
+    <link rel="stylesheet" href="css/style.css?v=20261010_mobile">
 </head>
 <body>
 <header class="navbar">
@@ -410,7 +410,7 @@
                         <input type="tel" id="patient-phone" class="search-input" placeholder="05/06/07 xx xx xx" required pattern="^(0)(5|6|7)[0-9]{8}$">
                     </div>
 
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                    <div class="booking-datetime-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                         <div class="search-field">
                             <label>تاريخ الموعد</label>
                             <input type="date" id="booking-date" class="search-input" required>
@@ -701,7 +701,7 @@
                 </div>
 
                 <form id="form-update-profile" data-submit="handleUpdateProfile" style="margin-top: 1.25rem;">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                    <div class="booking-datetime-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
                         <div class="search-field">
                             <label>الاسم الكامل</label>
                             <input type="text" id="prof-edit-name" class="search-input" required>
