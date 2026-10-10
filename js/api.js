@@ -18,7 +18,16 @@
   const CLINIC_KEY = 'shifa_clinic';
 
   const api = {
-    baseUrl: '',
+    baseUrl: (function () {
+      try {
+        const h = window.location.hostname;
+        // على GitHub Pages (أو أي استضافة ثابتة): نوجّه للسيرفر على Render
+        if (h && h !== 'localhost' && h !== '127.0.0.1' && !h.startsWith('192.168.') && !h.startsWith('10.')) {
+          return 'https://shifa-platform-setif.onrender.com';
+        }
+      } catch (e) { /* تجاهل */ }
+      return '';
+    })(),
 
     // ---------------------------------------------------------------------
     // إدارة رمز الجلسة
