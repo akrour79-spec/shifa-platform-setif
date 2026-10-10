@@ -3560,3 +3560,28 @@ button[type="submit"]:active {
         grid-template-columns: 1fr !important;
     }
 }
+
+/* إصلاح 2026-10-10 (3): منع تجاوز العرض في الهاتف نهائياً */
+@media (max-width: 768px) {
+    html, body {
+        overflow-x: hidden !important;
+        width: 100% !important;
+        position: relative;
+    }
+    img, video, iframe, svg, table {
+        max-width: 100% !important;
+    }
+    /* كل الحاويات الرئيسية */
+    header, nav, main, section, footer, div[class*="container"], div[class*="wrapper"] {
+        max-width: 100vw;
+    }
+    /* النصوص الطويلة تُكسر */
+    h1, h2, h3, h4, p, span, div {
+        overflow-wrap: break-word;
+        word-wrap: break-word;
+    }
+    /* البطاقة العلوية للطبيب في نافذة الحجز */
+    #booking-modal .modal-content > .modal-body > div:first-child {
+        overflow: hidden;
+    }
+}
