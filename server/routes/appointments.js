@@ -19,7 +19,7 @@ const { authenticate, optionalAuth, asyncHandler } = require('../middleware/auth
 const { AppError } = require('../middleware/errors');
 const { decorateAppointment, APPOINTMENT_STATUS, isPast } = require('../lib/constants');
 const { parseWindow, toMinutes, generateSlots, isWorkingDay } = require('../lib/slots');
-const { queueNotification, TEMPLATES, buildWhatsAppUrl } = require('../lib/notifications');
+const { queueNotification, processPendingNotifications, TEMPLATES, buildWhatsAppUrl } = require('../lib/notifications');
 
 const router = express.Router();
 
@@ -176,6 +176,12 @@ router.post('/', authenticate, asyncHandler(async (req, res) => {
 
     return { appointment: row, doctorName: doctor.name, whatsappUrl: waUrl, messageText: msgText };
   });
+
+  // إصلاح 2026-10-10: إرسال فوري بعد الحجز — كان يتسجل في الطابور
+  // ويستنى العامل الخلفي (5 دقائق) اللي ما يخدمش ديما على Render المجاني
+  try {
+    await processPendingNotifications(10);
+  } catch (e) { /* لا نكسر الحجز إن فشل الإشعار */ }
 
   res.status(201).json({
     message: 'تم حجز الموعد بنجاح',
