@@ -3,7 +3,7 @@
 
 CREATE TABLE IF NOT EXISTS reviews (
     id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    doctor_id   UUID NOT NULL REFERENCES doctors(id) ON DELETE CASCADE,
+    doctor_id   TEXT NOT NULL REFERENCES doctors(id) ON DELETE CASCADE,
     patient_id  UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     rating      INT NOT NULL CHECK (rating BETWEEN 1 AND 5),
     comment     TEXT CHECK (char_length(comment) <= 1000),
@@ -16,7 +16,7 @@ CREATE INDEX IF NOT EXISTS idx_reviews_doctor ON reviews(doctor_id);
 CREATE INDEX IF NOT EXISTS idx_reviews_created ON reviews(created_at DESC);
 
 -- دالة تحديث متوسط التقييم وعدد المراجعات للطبيب
-CREATE OR REPLACE FUNCTION refresh_doctor_rating(p_doctor_id UUID)
+CREATE OR REPLACE FUNCTION refresh_doctor_rating(p_doctor_id TEXT)
 RETURNS VOID AS $$
 BEGIN
     UPDATE doctors d
