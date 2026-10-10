@@ -71,6 +71,9 @@ const ALLOWED_ORIGINS = new Set([
   ...config.corsOrigin,
   `http://localhost:${config.port}`,
   `http://127.0.0.1:${config.port}`,
+  // Render يضبط RENDER_EXTERNAL_URL تلقائياً — نسمح لنطاق السيرفر نفسه
+  // حتى تعمل الواجهة المقدَّمة من الخادم مباشرة (onrender.com) بلا ضبط يدوي.
+  ...(process.env.RENDER_EXTERNAL_URL ? [process.env.RENDER_EXTERNAL_URL] : []),
 ]);
 
 app.use(cors({
