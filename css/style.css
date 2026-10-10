@@ -3553,3 +3553,10 @@ button[type="submit"]:active {
         white-space: nowrap;
     }
 }
+
+/* إصلاح 2026-10-10 (2): شبكة التاريخ/الوقت بكلاس مخصص */
+@media (max-width: 768px) {
+    .booking-datetime-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
