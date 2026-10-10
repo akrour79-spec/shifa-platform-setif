@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Allow: /patient.html
+Allow: /doctor.html
+Allow: /brand/
+Disallow: /admin.html
+
+Sitemap: https://akrour79-spec.github.io/shifa-platform-setif/sitemap.xml
