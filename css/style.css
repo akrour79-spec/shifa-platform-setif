@@ -3619,3 +3619,51 @@ button[type="submit"]:active {
         max-width: 100%;
     }
 }
+
+/* إصلاح 2026-10-10 (6): شريط التنقل في الهاتف — تمرير أفقي */
+@media (max-width: 768px) {
+    .nav-tabs {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+        justify-content: flex-start;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+        max-width: 100%;
+    }
+    .nav-tabs::-webkit-scrollbar {
+        display: none;
+    }
+    .nav-tab-btn {
+        flex-shrink: 0;
+        white-space: nowrap;
+        padding: 0.5rem 0.9rem;
+        font-size: 0.82rem;
+    }
+    /* فئات سريعة: بداية بدل توسيط */
+    .quick-categories {
+        justify-content: flex-start !important;
+    }
+    /* تقليل الهوامش */
+    .container {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+    .hero-section {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+    .modal-body {
+        padding: 1.25rem !important;
+    }
+    /* قائمة المستخدم */
+    .user-dropdown-popover {
+        min-width: 200px;
+        max-width: calc(100vw - 2rem);
+    }
+}
+/* شاشات صغيرة جداً: معلومات الطبيب عمود واحد */
+@media (max-width: 420px) {
+    .doc-meta {
+        grid-template-columns: 1fr !important;
+    }
+}
