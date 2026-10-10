@@ -292,14 +292,11 @@ function showSuccessTicket(rawApt, doctor) {
         ticketBody.prepend(check);
     }
 
-    // Attach Real WhatsApp direct trigger
+    // زر مشاركة التذكرة عبر واتساب — للمريض يبعثها لشكون يحب (عائلة...)
+    // إصلاح 2026-10-10: كان يفتح محادثة مع رقم المريض نفسه (يبعث لروحو!)
     const waBtn = document.getElementById('btn-whatsapp-confirm');
     if (waBtn) {
         waBtn.onclick = () => {
-            let phone = String(apt.patientPhone || '').replace(/\D/g, '');
-            if (phone.startsWith('0')) {
-                phone = '213' + phone.substring(1);
-            }
             const text = encodeURIComponent(
                 `🏥 تأكيد موعد - منصة شفاء (سطيف)\n` +
                 `------------------------------------\n` +
@@ -311,7 +308,8 @@ function showSuccessTicket(rawApt, doctor) {
                 `🔖 رقم الحجز: ${apt.id}\n\n` +
                 `يرجى الحضور قبل الموعد بـ 15 دقيقة وإبراز بطاقة الشفاء عند الدخول.`
             );
-            window.open(`https://wa.me/${phone}?text=${text}`, '_blank');
+            // بلا رقم مستلم — المريض يختار شكون يبعثلو
+            window.open(`https://wa.me/?text=${text}`, '_blank');
         };
     }
 
