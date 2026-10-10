@@ -254,8 +254,13 @@ async function handleLoginSubmit(event) {
 
         showToast(`✅ مرحباً ${result.user.fullName}! تم تسجيل الدخول بنجاح.`);
 
+        // إصلاح 2026-10-10: إعادة رسم الأطباء بعد الدخول — الطبيب لا يرى زر الحجز
+        if (typeof renderDoctors === 'function' && state.doctors?.length) {
+            renderDoctors(state.doctors);
+        }
+
         if (result.user.role === 'doctor' || result.user.role === 'secretary') {
-            switchView('doctor');
+            if (typeof switchView === 'function') switchView('doctor');
         }
         await refreshAppointments();
     } catch (err) {
@@ -429,6 +434,10 @@ function handleLogout() {
     if (typeof renderDoctorDashboard === 'function') renderDoctorDashboard();
     updateUserUI();
     if (typeof switchView === 'function') switchView('patient');
+    // إصلاح 2026-10-10: إعادة رسم الأطباء بعد الخروج — الزائر يرى زر الحجز
+    if (typeof renderDoctors === 'function' && state.doctors?.length) {
+        renderDoctors(state.doctors);
+    }
 
     showToast('تم تسجيل الخروج بنجاح');
 }
