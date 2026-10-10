@@ -37,7 +37,7 @@ function selectDoctorSlot(docId, slot, btnElement) {
  */
 async function openBookingModal(docId, presetDate, presetSlot) {
     // 🔒 إلزام تسجيل الدخول / إنشاء حساب قبل حجز الموعد
-    if (!API.isAuthenticated()) {
+    if (!api.isAuthenticated()) {
         if (typeof showToast === 'function') {
             showToast('يرجى تسجيل الدخول أو إنشاء حساب جديد أولاً حتى تتمكن من حجز موعدك', 'info');
         }
@@ -93,7 +93,7 @@ async function openBookingModal(docId, presetDate, presetSlot) {
     document.getElementById('booking-modal')?.classList.add('open');
 
     // Pre-fill patient details if logged in
-    const authUser = API.getUser();
+    const authUser = api.getUser();
     if (authUser) {
         const pNameInput = document.getElementById('patient-name');
         const pPhoneInput = document.getElementById('patient-phone');
