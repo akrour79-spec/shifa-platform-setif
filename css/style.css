@@ -3476,3 +3476,80 @@ button[type="submit"]:active {
 [data-theme="dark"] .chifa-card-notice label {
     color: #a7f3d0 !important;
 }
+
+/* إصلاح 2026-10-10: تجاوب النوافذ المنبثقة مع الهاتف */
+@media (max-width: 768px) {
+    .modal-overlay {
+        padding: 0.75rem;
+        align-items: flex-end;
+    }
+    .modal-content {
+        max-width: 100%;
+        width: 100%;
+        max-height: 92vh;
+        overflow-y: auto;
+        border-radius: 16px 16px 0 0;
+    }
+    .modal-body {
+        padding: 1rem;
+    }
+    /* تاريخ ووقت الحجز: عمود واحد في الهاتف */
+    #form-booking > div[style*="grid-template-columns: 1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+    }
+    /* منع تجاوز حقول الإدخال */
+    .search-input, .search-select, input[type="date"], input[type="tel"], input[type="text"] {
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+    input[type="date"] {
+        min-width: 0;
+    }
+}
+
+/* إصلاح 2026-10-10: تجاوب عام مع الهاتف */
+@media (max-width: 768px) {
+    body {
+        overflow-x: hidden;
+    }
+    .container, .main-container {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+        max-width: 100%;
+    }
+    .hero-title {
+        font-size: 1.5rem !important;
+        line-height: 1.4;
+    }
+    .hero-subtitle {
+        font-size: 0.95rem;
+    }
+    /* بطاقات الأطباء: عمود واحد */
+    .doctors-grid, .doctor-grid {
+        grid-template-columns: 1fr !important;
+        gap: 0.75rem;
+    }
+    /* شريط البحث: عمود واحد */
+    .search-card {
+        grid-template-columns: 1fr !important;
+        padding: 1rem;
+    }
+    /* شريط التنقل */
+    .nav-container {
+        padding: 0.5rem 0.75rem;
+    }
+    .nav-links {
+        display: none;
+    }
+    /* الإحصائيات */
+    .stats-grid, .stat-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 0.5rem;
+    }
+    /* الجداول: تمرير أفقي */
+    .table-wrapper, table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+}
