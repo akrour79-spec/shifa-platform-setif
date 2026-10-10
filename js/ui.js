@@ -155,7 +155,7 @@ document.addEventListener('shifa:session-expired', () => {
     state.clinic = null;
     state.appointments = [];
     renderQueue();
-    renderDoctorDashboard();
+    if (typeof renderDoctorDashboard === 'function') renderDoctorDashboard();
     updateUserUI();
     openAuthModal('login', 'patient');
     showToast('انتهت جلستك. يرجى تسجيل الدخول من جديد.', 'error');
