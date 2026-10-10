@@ -3593,3 +3593,29 @@ button[type="submit"]:active {
         gap: 1rem !important;
     }
 }
+
+/* إصلاح 2026-10-10 (5): نافذة التذكرة في الهاتف */
+@media (max-width: 768px) {
+    #ticket-modal .modal-content {
+        max-width: calc(100vw - 1.5rem) !important;
+    }
+    #ticket-modal .modal-body {
+        padding: 1rem 0.75rem !important;
+        overflow-x: hidden;
+    }
+    .ticket-card {
+        max-width: 100%;
+        overflow: hidden;
+    }
+    .ticket-field {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.25rem 0.5rem;
+        max-width: 100%;
+    }
+    .ticket-field span {
+        overflow-wrap: break-word;
+        word-break: break-word;
+        max-width: 100%;
+    }
+}
