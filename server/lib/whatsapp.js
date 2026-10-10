@@ -78,4 +78,58 @@ async function sendWhatsApp(phone, message) {
   }
 }
 
-module.exports = { sendWhatsApp, isConfigured, toInternational };
+/**
+ * إرسال رسالة قالب (Template) — للبدء بمحادثة جديدة بلا نافذة 24 ساعة.
+ * @param {string} phone رقم المستلم
+ * @param {string} templateName اسم القالب المعتمد
+ * @param {string[]} params قيم المتغيرات {{1}}..{{n}}
+ * @param {string} langCode لغة القالب (ar)
+ */
+async function sendTemplateMessage(phone, templateName, params = [], langCode = 'ar') {
+  const to = toInternational(phone);
+  if (!to || !templateName) {
+    return { ok: false, provider: 'whatsapp', error: 'missing_phone_or_template' };
+  }
+  if (!isConfigured()) {
+    console.log(`[whatsapp:log-mode-template] → ${to}: ${templateName}`);
+    return { ok: true, provider: 'whatsapp-log', messageId: `log-${Date.now()}` };
+  }
+  try {
+    const res = await fetch(
+      `https://graph.facebook.com/${API_VERSION}/${PHONE_NUMBER_ID}/messages`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messaging_product: 'whatsapp',
+          to,
+          type: 'template',
+          template: {
+            name: templateName,
+            language: { code: langCode },
+            components: [
+              {
+                type: 'body',
+                parameters: params.map((p) => ({ type: 'text', text: String(p) })),
+              },
+            ],
+          },
+        }),
+      }
+    );
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const errMsg = data?.error?.message || `http_${res.status}`;
+      return { ok: false, provider: 'whatsapp-cloud', error: errMsg };
+    }
+    const messageId = data?.messages?.[0]?.id || null;
+    return { ok: true, provider: 'whatsapp-cloud', messageId };
+  } catch (err) {
+    return { ok: false, provider: 'whatsapp-cloud', error: err.message };
+  }
+}
+
+module.exports = { sendWhatsApp, sendTemplateMessage, isConfigured, toInternational };
