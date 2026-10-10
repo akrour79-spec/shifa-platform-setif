@@ -425,10 +425,10 @@ function handleLogout() {
     const popover = document.getElementById('user-dropdown-popover');
     if (popover) popover.classList.remove('open');
 
-    renderQueue();
-    renderDoctorDashboard();
+    if (typeof renderQueue === 'function') renderQueue();
+    if (typeof renderDoctorDashboard === 'function') renderDoctorDashboard();
     updateUserUI();
-    switchView('patient');
+    if (typeof switchView === 'function') switchView('patient');
 
     showToast('تم تسجيل الخروج بنجاح');
 }
