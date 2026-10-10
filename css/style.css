@@ -3585,3 +3585,11 @@ button[type="submit"]:active {
         overflow: hidden;
     }
 }
+
+/* إصلاح 2026-10-10 (4): شبكة الطابور عمود واحد في الهاتف */
+@media (max-width: 768px) {
+    .queue-layout-grid {
+        grid-template-columns: 1fr !important;
+        gap: 1rem !important;
+    }
+}
