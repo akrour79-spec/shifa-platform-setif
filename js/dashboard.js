@@ -166,8 +166,8 @@ function sendPrescriptionWhatsApp() {
 // إدارة حالة استقبال المواعيد (تغيير مفتاح التشغيل / الإيقاف)
 // ---------------------------------------------------------------------------
 async function handleToggleBookingStatus() {
-  const user = API.getUser();
-  const clinic = API.getClinic();
+  const user = api.getUser();
+  const clinic = api.getClinic();
     if (clinic) {
       updateDoctorBookingStatusUI(clinic.accepting_bookings !== false);
     }
@@ -181,10 +181,10 @@ async function handleToggleBookingStatus() {
   const nextStatus = !currentStatus;
 
   try {
-    const res = await API.toggleBookingStatus(nextStatus);
+    const res = await api.toggleBookingStatus(nextStatus);
     if (clinic) {
       clinic.accepting_bookings = nextStatus;
-      API.setSession(API.getToken(), user, clinic);
+      api.setSession(api.getToken(), user, clinic);
     }
     updateDoctorBookingStatusUI(nextStatus);
     if (typeof showToast === 'function') {
