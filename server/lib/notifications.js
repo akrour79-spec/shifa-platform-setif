@@ -115,14 +115,28 @@ async function processPendingNotifications(limit = 20) {
 
   // الإرسال الحقيقي — whatsapp.js يختار Cloud API إن كان مضبوطاً،
   // وإلا وضع السجل (لا يرمي خطأ في التطوير)
-  const { sendWhatsApp } = require('./whatsapp');
+  // إصلاح 2026-10-10: دعم قوالب واتساب — الرسالة قد تكون JSON يحمل
+  // {template, params, lang} فيُرسل كقالب معتمد (يفتح محادثة جديدة)،
+  // وإلا تُرسل كنص حر (داخل نافذة 24 ساعة).
+  const { sendWhatsApp, sendTemplateMessage } = require('./whatsapp');
   const processed = [];
 
   for (const item of pending) {
     try {
-      const result = item.channel === 'whatsapp'
-        ? await sendWhatsApp(item.recipient_phone, item.message)
-        : { ok: true, provider: `${item.channel}-log`, messageId: `log-${Date.now()}` };
+      let result;
+      if (item.channel === 'whatsapp') {
+        let tpl = null;
+        try { tpl = JSON.parse(item.message); } catch (e) { /* نص حر */ }
+        if (tpl && tpl.template) {
+          result = await sendTemplateMessage(
+            item.recipient_phone, tpl.template, tpl.params || [], tpl.lang || 'ar'
+          );
+        } else {
+          result = await sendWhatsApp(item.recipient_phone, item.message);
+        }
+      } else {
+        result = { ok: true, provider: `${item.channel}-log`, messageId: `log-${Date.now()}` };
+      }
 
       if (!result.ok) throw new Error(result.error || 'send_failed');
 
