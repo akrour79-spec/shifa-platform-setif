@@ -152,7 +152,9 @@ router.post('/', authenticate, asyncHandler(async (req, res) => {
       )
     ).rows[0];
 
-    // 7) إدراج إشعار تأكيد فوري في طابور الإشعارات (WhatsApp & SMS)
+    // 7) إدراج إشعار تأكيد فوري في طابور الإشعارات (WhatsApp)
+    // إصلاح 2026-10-10: يُرسل كقالب معتمد appointment_confirmation
+    // (يفتح محادثة جديدة بلا حاجة لنافذة 24 ساعة)
     const msgText = TEMPLATES.confirmation({
       patientName,
       doctorName: doctor.name,
@@ -163,12 +165,19 @@ router.post('/', authenticate, asyncHandler(async (req, res) => {
       address: doctor.address,
     });
 
+    const templatePayload = JSON.stringify({
+      template: 'appointment_confirmation',
+      lang: 'ar',
+      params: [patientName, `${doctor.name} (${doctor.title})`, date, time, String(next_number)],
+      fallbackText: msgText,
+    });
+
     await queueNotification({
       appointmentId: row.id,
       channel: 'whatsapp',
       recipientPhone: patientPhone,
       recipientName: patientName,
-      message: msgText,
+      message: templatePayload,
       scheduledFor: new Date(),
     }, client);
 
