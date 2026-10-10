@@ -278,7 +278,7 @@ test('حالة العيادة محفوظة مع الجلسة وتُقرأ من �
     const tail = line.slice(line.indexOf('api.setSession('));
     assert.match(
       tail,
-      /(result\.clinic|state\.currentUser|me\.user)/,
+      /(result\.clinic|state\.currentUser|me\.user|,\s*clinic\s*\))/,
       'L' + n + ': setSession بلا حالة العيادة — ستضيع أو تبقى قديمة'
     );
   }
