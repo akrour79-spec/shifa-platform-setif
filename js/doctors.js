@@ -185,6 +185,10 @@ function renderDoctors(doctorsList) {
         resultsCount.textContent = `تم العثور على ${doctorsList.length} طبيب وعيادة في ولاية سطيف`;
     }
 
+    // إصلاح 2026-10-10: الطبيب/المشرف المسجَّل لا يرى زر الحجز — الحجز للمرضى فقط
+    const currentRole = (() => { try { return api.getUser()?.role || null; } catch (e) { return null; } })();
+    const canBook = currentRole !== 'doctor' && currentRole !== 'admin' && currentRole !== 'secretary';
+
     // تنبيه شفافية البيانات: الأسماء المخيّلة تُعرض بلا تمييز فهي تبدو
     // أنان أحد شخصة نفسه لطبيب لم يوافق على الظهور.
     // لم يوافق على الظهور. يظهر فقط حين توجد عيادات تجريبية في النتائج.
@@ -268,10 +272,10 @@ container.innerHTML = banner + doctorsList.map((doc, i) => `
             </div>
 
             <div class="doc-footer">
-                <button class="btn-primary doc-book-btn" style="flex: 1;" data-doc-id="${api.escape(doc.id)}">
+                ${canBook ? `<button class="btn-primary doc-book-btn" style="flex: 1;" data-doc-id="${api.escape(doc.id)}">
                     <i data-lucide="calendar-check" style="width: 18px; height: 18px;"></i>
                     ${t('patient.book.now')}
-                </button>
+                </button>` : ''}
                 <button class="btn-outline doc-locate-btn" data-lat="${api.escape(doc.lat)}" data-lng="${api.escape(doc.lng)}" data-name="${api.escape(doc.name)}" title="عرض في الخريطة">
                     <i data-lucide="map-pin" style="width: 18px; height: 18px;"></i>
                 </button>
