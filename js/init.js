@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (typeof renderStats === 'function') renderStats();
     initMap();
     renderQueue();
-    renderDoctorDashboard();
+    if (typeof renderDoctorDashboard === 'function') renderDoctorDashboard();
     startConnectionStatusPolling();
     initScrollReveal();
     renderSubscriptions();
