@@ -31,13 +31,9 @@ const UI_ACTIONS = Object.freeze({
     closeReviewModal,
     loadPatientPortal,
     cancelAppointmentFromPortal: (arg) => cancelAppointmentFromPortal(arg),
-    // إصلاح 2026-10-09: أزرار موجودة في patient.html (شاشة TV + الملف الشخصي
-    // + الطابور) لكنها كانت غير مسجَّلة هنا فلا تفعل شيئاً عند الضغط.
+    // فصل 2026-10-10: أزرار إدارة الطابور (استدعاء، walk-in، TV) حُذفت من
+    // patient.html — هي للطبيب/السكرتير فقط وتوجد في doctor.html.
     closeProfileModal,
-    openWalkinModal,
-    toggleClinicTVMode,
-    callNextPatientWithSpeech,
-    repeatCurrentCallout,
 });
 const FORM_ACTIONS = Object.freeze({
     submitBooking: (...args) => submitBooking(...args),
